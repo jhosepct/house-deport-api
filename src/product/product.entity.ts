@@ -7,7 +7,7 @@ import {
   UpdateDateColumn, OneToMany, JoinColumn
 } from "typeorm";
 import { Category } from '../category/category.entity';
-import { Size } from '../category/size.entity';
+import { Size } from '../size/size.entity';
 import { ProductWarehouse } from "../product-warehouse/producto-warehouse.entity";
 
 @Entity()

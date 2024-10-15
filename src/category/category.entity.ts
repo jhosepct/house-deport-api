@@ -5,7 +5,7 @@ import {
   CreateDateColumn,
   UpdateDateColumn, OneToMany
 } from "typeorm";
-import { Size } from "./size.entity";
+import { Size } from "../size/size.entity";
 import { Product } from "../product/product.entity";
 
 @Entity()
@@ -28,4 +28,12 @@ export class Category {
 
   @OneToMany(() => Product, (product) => product.category)
   products: Product[];
+
+  ToJSON() {
+    return {
+      id: this.id,
+      name: this.name,
+      sizes: this.sizes.map((size) => size.ToJSON()),
+    };
+  }
 }

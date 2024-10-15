@@ -30,10 +30,12 @@ import { OrderDetail } from './order/order-detail.entity';
 import { HistoryProduct } from './product/history-producto.entity';
 import { Product } from './product/product.entity';
 import { Category } from './category/category.entity';
-import { Size } from './category/size.entity';
+import { Size } from './size/size.entity';
 import { ProductWarehouse } from './product-warehouse/producto-warehouse.entity';
 import { Warehouse } from './product-warehouse/warehouse.entity';
 import { AuthModule } from './auth/auth.module';
+import { SizeController } from './size/size.controller';
+import { SizeModule } from './size/size.module';
 
 @Module({
   imports: [
@@ -68,12 +70,14 @@ import { AuthModule } from './auth/auth.module';
       }),
     }),
     AuthModule,
-    // ProductModule,
+    ProductModule,
     ClientModule,
     // OrderModule,
     UserModule,
+    SizeModule,
     // ProductWarehouseModule,
-    // CategoryModule,
+    CategoryModule,
+    SizeModule,
   ],
   controllers: [AppController],
   providers: [AppService],
