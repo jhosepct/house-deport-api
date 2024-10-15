@@ -20,18 +20,18 @@ export class ProductDto {
   @IsNotEmpty()
   @ApiResponseProperty()
   readonly price: number;
-  @IsArray()
+  @IsObject()
   @IsNotEmpty()
   @ApiResponseProperty({
     type: CategoryDto
   })
-  readonly category: CategoryDto[];
-  @IsArray()
+  readonly category: CategoryDto;
+  @IsObject()
   @IsNotEmpty()
   @ApiResponseProperty({
     type: SizeDto
   })
-  readonly size: SizeDto[];
+  readonly size: SizeDto;
   @IsNumber()
   @IsNotEmpty()
   @ApiResponseProperty()

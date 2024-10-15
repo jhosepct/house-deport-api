@@ -47,4 +47,17 @@ export class Product {
 
   @OneToMany(() =>ProductWarehouse, (productWarehouse) => productWarehouse.product)
   productWarehouses: ProductWarehouse[];
+
+  ToJSON() {
+    return {
+      id: this.id,
+      name: this.name,
+      code: this.code,
+      price: this.price,
+      category: this.category,
+      size: this.size,
+      stockInventory: this.stockInventory,
+      stockStore: this.stockStore,
+    };
+  }
 }
