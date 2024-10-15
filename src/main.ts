@@ -9,11 +9,11 @@ async function bootstrap() {
   const app = await NestFactory.create(AppModule);
   const config = new DocumentBuilder()
     .addBearerAuth()
-    .setTitle('Postgrado uncp')
+    .setTitle('House Deport “Creaciones Emily”')
     .setDescription(
-      'Hacer el seguimiento de estudiantes de la facultad de ingeniería de sistemas de la universidad UNCP',
+      'Venta al por menor de equipo de deporte en comercios especializados',
     )
-    .setVersion('1.0')
+    .setVersion('0.1.0')
     .addTag('NestJS')
     .build();
   const document = SwaggerModule.createDocument(app, config);

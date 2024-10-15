@@ -15,7 +15,7 @@ export class AuthService {
         private jwtService: JwtService
     ) { }
 
-    async login(userObject: LoginDto, res: Response) {
+    async login(userObject: LoginDto, res: Response): Promise<HttpException> {
         const userFound =  await this.userRepository.findOneBy({ email: userObject.email });
         if (!userFound) throw new HttpException('User not found', HttpStatus.NOT_FOUND);
 

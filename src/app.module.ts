@@ -33,6 +33,7 @@ import { Category } from './category/category.entity';
 import { Size } from './category/size.entity';
 import { ProductWarehouse } from './product-warehouse/producto-warehouse.entity';
 import { Warehouse } from './product-warehouse/warehouse.entity';
+import { AuthModule } from "./auth/auth.module";
 
 @Module({
   imports: [
@@ -49,7 +50,7 @@ import { Warehouse } from './product-warehouse/warehouse.entity';
       useFactory: (configService: ConfigType<typeof config>) => ({
         type: 'postgres',
         url: configService.DATABASE_URL_LOCAL,
-        dropSchema: true,
+        //dropSchema: true,
         entities: [
           User,
           Client,
@@ -66,29 +67,19 @@ import { Warehouse } from './product-warehouse/warehouse.entity';
         logging: true,
       }),
     }),
-    ProductModule,
-    ClientModule,
-    OrderModule,
+    AuthModule,
+    // ProductModule,
+    // ClientModule,
+    // OrderModule,
     UserModule,
-    ProductWarehouseModule,
-    CategoryModule,
+    // ProductWarehouseModule,
+    // CategoryModule,
   ],
   controllers: [
-    AppController,
-    ProductController,
-    ClientController,
-    OrderController,
-    UserController,
-    ProductWarehouseController,
-    CategoryController,
+    AppController
   ],
   providers: [
     AppService,
-    ClientService,
-    OrderService,
-    UserService,
-    ProductWarehouseService,
-    CategoryService,
   ],
 })
 export class AppModule {}

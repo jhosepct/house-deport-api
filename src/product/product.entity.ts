@@ -22,6 +22,9 @@ export class Product {
   @Column({ name: 'p_code' })
   code: string;
 
+  @Column({ name: 'p_price', type: 'decimal' })
+  price: number;
+
   @ManyToOne(() => Category, (category) => category.products)
   @JoinColumn({ name: 'ca_id' })
   category: Category;

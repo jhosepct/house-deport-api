@@ -58,12 +58,11 @@ export class User {
 
   ToJSON() {
     return {
+      id: this.id,
       firstName: this.firstName,
       lastName: this.lastName,
       email: this.email,
-      username: this.username,
-      role: this.role,
-      status: this.status
+      username: this.username
     }
   }
 }
