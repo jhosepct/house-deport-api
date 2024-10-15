@@ -33,7 +33,7 @@ import { Category } from './category/category.entity';
 import { Size } from './category/size.entity';
 import { ProductWarehouse } from './product-warehouse/producto-warehouse.entity';
 import { Warehouse } from './product-warehouse/warehouse.entity';
-import { AuthModule } from "./auth/auth.module";
+import { AuthModule } from './auth/auth.module';
 
 @Module({
   imports: [
@@ -69,17 +69,13 @@ import { AuthModule } from "./auth/auth.module";
     }),
     AuthModule,
     // ProductModule,
-    // ClientModule,
+    ClientModule,
     // OrderModule,
     UserModule,
     // ProductWarehouseModule,
     // CategoryModule,
   ],
-  controllers: [
-    AppController
-  ],
-  providers: [
-    AppService,
-  ],
+  controllers: [AppController],
+  providers: [AppService],
 })
 export class AppModule {}

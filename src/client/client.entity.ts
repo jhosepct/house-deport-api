@@ -50,4 +50,20 @@ export class Client {
 
   @OneToMany(() => Order, (order) => order.client)
   orders: Order[];
+
+  ToJSON() {
+    return {
+      id: this.id,
+      firstName: this.firstName,
+      lastName: this.lastName,
+      phone: this.phone,
+      email: this.email,
+      address: this.address,
+      numberDocument: this.numberDocument,
+      typeDocument: this.typeDocument,
+      status: this.status,
+      created_at: this.created_at,
+      updated_at: this.updated_at,
+    };
+  }
 }
