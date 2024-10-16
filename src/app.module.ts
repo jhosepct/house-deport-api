@@ -72,7 +72,7 @@ import { SizeModule } from './size/size.module';
     AuthModule,
     ProductModule,
     ClientModule,
-    // OrderModule,
+    OrderModule,
     UserModule,
     SizeModule,
     // ProductWarehouseModule,

@@ -3,10 +3,11 @@ import {
   PrimaryGeneratedColumn,
   Column,
   CreateDateColumn,
-  UpdateDateColumn, OneToMany
-} from "typeorm";
-import { Size } from "../size/size.entity";
-import { Product } from "../product/product.entity";
+  UpdateDateColumn,
+  OneToMany,
+} from 'typeorm';
+import { Size } from '../size/size.entity';
+import { Product } from '../product/product.entity';
 
 @Entity()
 export class Category {
@@ -18,7 +19,7 @@ export class Category {
   name: string;
 
   @OneToMany(() => Size, (size) => size.category)
-  sizes: Size[]
+  sizes: Size[];
 
   @CreateDateColumn()
   created_at: Date;
@@ -33,7 +34,14 @@ export class Category {
     return {
       id: this.id,
       name: this.name,
-      sizes: this.sizes.map((size) => size.ToJSON()),
+      sizes: this.sizes ? this.sizes.map((size) => size.ToJSON()) : null,
+    };
+  }
+
+  ToBasicJSON() {
+    return {
+      id: this.id,
+      name: this.name,
     };
   }
 }

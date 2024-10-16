@@ -23,7 +23,7 @@ export class ProductController {
   @Get()
   @ApiOperation({ summary: 'Get all products' })
   @ApiResponse({ status: 200, type: [ProductDto] })
-  findAll(): Promise<Product[]> {
+  findAll(): Promise<ProductDto[]> {
     return this.productService.findAll();
   }
 

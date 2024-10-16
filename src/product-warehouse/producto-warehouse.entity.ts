@@ -39,6 +39,28 @@ export class ProductWarehouse {
   @UpdateDateColumn()
   updated_at: Date;
 
-  @OneToMany(() => OrderDetail, (orderDetail) => orderDetail.productWarehouse)
-  orderDetails: OrderDetail[];
+  @OneToMany(() => Product, (product) => product.productWarehouse)
+  products: Product[];
+
+  ToJSON() {
+    return {
+      id: this.id,
+      warehouse: this.warehouse ? this.warehouse.ToJSON() : null,
+      product: this.product ? this.product.ToJSON() : null,
+      row: this.row,
+      column: this.column,
+      quantity: this.quantity,
+    };
+  }
+
+  ToBasicJSON() {
+    return {
+      id: this.id,
+      row: this.row,
+      column: this.column,
+      quantity: this.quantity,
+      name: this.warehouse ? this.warehouse.name : null,
+      status: this.warehouse ? this.warehouse.status : null,
+    };
+  }
 }

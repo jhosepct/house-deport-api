@@ -18,8 +18,8 @@ export class ProductService {
     @InjectRepository(Size) private sizeRepository: Repository<Size>,
   ) {}
 
-  findAll(): Promise<Product[]> {
-    return this.productRepository.find({ relations: ['category', 'size'] });
+  async findAll(): Promise<ProductDto[]> {
+    return (await this.productRepository.find({ relations: ['category', 'size'] })).map((product) => product.ToJSON());
   }
 
   async findOne(id: number): Promise<ProductDto> {

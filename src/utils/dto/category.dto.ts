@@ -1,4 +1,4 @@
-import { IsArray, IsNotEmpty, IsNumber, IsString } from "class-validator";
+import { IsArray, IsNotEmpty, IsNumber, IsOptional, IsString } from "class-validator";
 import { ApiProperty } from "@nestjs/swagger";
 import { ApiResponseProperty } from "@nestjs/swagger/dist/decorators/api-property.decorator";
 import { SizeDto } from "./size.dto";
@@ -13,7 +13,7 @@ export class CategoryDto {
     @ApiResponseProperty()
     readonly name: string;
     @IsArray()
-    @IsNotEmpty()
+    @IsOptional()
     @ApiProperty({
         type: SizeDto,
         isArray: true

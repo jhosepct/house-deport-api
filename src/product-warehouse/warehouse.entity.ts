@@ -38,4 +38,14 @@ export class Warehouse {
 
   @OneToMany(() => ProductWarehouse, (productWarehouse) => productWarehouse.warehouse)
   productWarehouses: ProductWarehouse[];
+
+  ToJSON() {
+    return {
+      id: this.id,
+      name: this.name,
+      rowMax: this.rowMax,
+      columnMax: this.columnMax,
+      status: this.status,
+    };
+  }
 }

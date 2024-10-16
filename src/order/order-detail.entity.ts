@@ -16,17 +16,13 @@ export class OrderDetail {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @ManyToOne(() => Order)
+  @ManyToOne(() => Order, (order) => order.orderDetails)
   @JoinColumn({ name: 'or_id' })
   order: Order;
 
-  @ManyToOne(() => Product)
+  @ManyToOne(() => Product, (product) => product.productWarehouses)
   @JoinColumn({ name: 'p_id' })
   product: Product;
-
-  @ManyToOne(() => ProductWarehouse, (productWarehouse) => productWarehouse.orderDetails)
-  @JoinColumn({ name: 'pw_id' })
-  productWarehouse: ProductWarehouse;
 
   @Column({ name: 'od_quantity', type: 'integer' })
   quantity: number;
@@ -42,4 +38,14 @@ export class OrderDetail {
 
   @UpdateDateColumn()
   updated_at: Date;
+
+  ToJSON() {
+    return {
+      id: this.id,
+      product: this.product ? this.product.ToBasicJSON() : null,
+      quantity: this.quantity,
+      unitPrice: this.unitPrice,
+      total: this.total / 100,
+    };
+  }
 }
