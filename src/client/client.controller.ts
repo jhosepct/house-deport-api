@@ -7,7 +7,7 @@ import { UpdateClientDto } from "./dto/UpdateCientDto";
 import { Error404, Error409 } from "../utils/dto/response.dto";
 
 @ApiTags('Client')
-@Controller('client')
+@Controller('clients')
 export class ClientController {
   constructor(private readonly clientService: ClientService) {}
 

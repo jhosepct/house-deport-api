@@ -2,10 +2,6 @@ import { IsNotEmpty, IsNumber, IsString } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
 
 export class CreateClientDto {
-  @IsNumber()
-  @IsNotEmpty()
-  @ApiProperty()
-  readonly id: number;
   @IsString()
   @IsNotEmpty()
   @ApiProperty()
