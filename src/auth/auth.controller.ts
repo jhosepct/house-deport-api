@@ -1,5 +1,5 @@
 import { Body, Controller, Delete, Get, HttpException, Post, Res } from "@nestjs/common";
-import { LoginDto } from './dto/login-auth.dto';
+import { LoginDto, LoginWithUsernameDto } from "./dto/login-auth.dto";
 import { AuthService } from './auth.service';
 
 import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
@@ -20,6 +20,16 @@ export class AuthController {
     @ApiResponse({ status: 404, description: 'Error: Not Found', type: Error404 })
     async login(@Body() userObject: LoginDto, @Res({ passthrough: true }) res: Response): Promise<HttpException>  {
         return this.authService.login(userObject, res);
+    }
+
+    @Post('login-username')
+    @ApiOperation({ summary: 'Iniciar sesión con username' })
+    @ApiResponse({ status: 200, type: UserDto })
+    @ApiResponse({ status: 400, description: 'Error: Bad Request', type: Error400 })
+    @ApiResponse({ status: 401, description: 'Error: Unauthorized', type: Error401 })
+    @ApiResponse({ status: 404, description: 'Error: Not Found', type: Error404 })
+    async loginWithUsername(@Body() userObject: LoginWithUsernameDto, @Res({ passthrough: true }) res: Response): Promise<HttpException>  {
+        return this.authService.loginWithUsername(userObject, res);
     }
 
     @Delete('logout')

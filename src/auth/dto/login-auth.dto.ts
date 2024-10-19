@@ -12,3 +12,13 @@ export class LoginDto {
     @MaxLength(20)
     readonly password: string;
 }
+export class LoginWithUsernameDto {
+    @ApiProperty()
+    @IsNotEmpty()
+    @IsString()
+    readonly username: string;
+    @ApiProperty()
+    @MinLength(6)
+    @MaxLength(20)
+    readonly password: string;
+}
