@@ -58,6 +58,10 @@ export class ProductService {
   }
 
   async delete(id: number): Promise<void> {
-    return this.productRepository.delete(id).then(() => undefined);
+    const result = await this.productRepository.delete(id);
+
+    if (result.affected === 0) {
+      throw new HttpException('Product not found', HttpStatus.NOT_FOUND);
+    }
   }
 }

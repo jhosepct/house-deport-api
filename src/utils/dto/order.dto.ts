@@ -30,7 +30,7 @@ class DetailDto {
   @IsNotEmpty()
   @ApiResponseProperty()
   readonly id: number;
-  @IsString()
+  @IsObject()
   @IsNotEmpty()
   @ApiResponseProperty()
   readonly product: ProductBasicDto;

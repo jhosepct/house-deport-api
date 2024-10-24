@@ -6,12 +6,15 @@ import { Category } from './category.entity';
 import { CategoryDto } from '../utils/dto/category.dto';
 import { CreateCategoryDtoDto } from './dto/CreateCategoryDto.dto';
 import { UpdateCategoryDtoDto } from './dto/UpdateCategoryDto.dto';
+import { Size } from "../size/size.entity";
 
 @Injectable()
 export class CategoryService {
   constructor(
     @InjectRepository(Category)
     private categoryRepository: Repository<Category>,
+    @InjectRepository(Size)
+    private sizeRepository: Repository<Size>,
   ) {}
 
   async findAll(): Promise<CategoryDto[]> {
@@ -51,6 +54,15 @@ export class CategoryService {
   }
 
   async delete(id: number): Promise<void> {
-    return this.categoryRepository.delete(id).then(() => undefined);
+    const category = await this.categoryRepository.findOne({
+      where: { id },
+      relations: ['sizes'],
+    });
+    if (!category)
+      throw new HttpException('Category not found', HttpStatus.NOT_FOUND);
+
+    if (category.sizes.length > 0) await this.sizeRepository.remove(category.sizes);
+
+    await this.categoryRepository.delete(id);
   }
 }

@@ -18,7 +18,10 @@ export class Category {
   @Column({ name: 'c_name' })
   name: string;
 
-  @OneToMany(() => Size, (size) => size.category)
+  @OneToMany(() => Size, (size) => size.category, {
+    cascade: true,
+    onDelete: 'CASCADE',
+  })
   sizes: Size[];
 
   @CreateDateColumn()
