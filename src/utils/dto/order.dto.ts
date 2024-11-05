@@ -1,29 +1,9 @@
 import { IsArray, IsDate, IsNotEmpty, IsNumber, IsObject, IsOptional, IsString } from "class-validator";
 import { ApiResponseProperty } from '@nestjs/swagger/dist/decorators/api-property.decorator';
-import { SizeDto } from './size.dto';
 import { UserDto } from './user.dto';
 import { ClientDto } from './client.dto';
-import { ProductDto } from './product.dto';
 import { ApiProperty } from "@nestjs/swagger";
-
-class ProductBasicDto {
-  @IsNumber()
-  @IsNotEmpty()
-  @ApiResponseProperty()
-  readonly id: number;
-  @IsString()
-  @IsNotEmpty()
-  @ApiResponseProperty()
-  readonly name: string;
-  @IsString()
-  @IsNotEmpty()
-  @ApiResponseProperty()
-  readonly code: string;
-  @IsNumber()
-  @IsNotEmpty()
-  @ApiResponseProperty()
-  readonly price: number;
-}
+import { ProductBasicDto } from "./ProductBasicDto";
 
 class DetailDto {
   @IsNumber()

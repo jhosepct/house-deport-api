@@ -6,7 +6,7 @@ import {
   CreateDateColumn,
   UpdateDateColumn, OneToMany, JoinColumn
 } from "typeorm";
-import { Warehouse } from './warehouse.entity';
+import { Warehouse } from '../warehouse/warehouse.entity';
 import { Product } from '../product/product.entity';
 import { OrderDetail } from "../order/order-detail.entity";
 

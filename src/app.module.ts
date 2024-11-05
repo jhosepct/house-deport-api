@@ -32,10 +32,12 @@ import { Product } from './product/product.entity';
 import { Category } from './category/category.entity';
 import { Size } from './size/size.entity';
 import { ProductWarehouse } from './product-warehouse/producto-warehouse.entity';
-import { Warehouse } from './product-warehouse/warehouse.entity';
+import { Warehouse } from './warehouse/warehouse.entity';
 import { AuthModule } from './auth/auth.module';
 import { SizeController } from './size/size.controller';
 import { SizeModule } from './size/size.module';
+import { WarehouseController } from './warehouse/warehouse.controller';
+import { WarehouseModule } from './warehouse/warehouse.module';
 
 @Module({
   imports: [
@@ -75,9 +77,10 @@ import { SizeModule } from './size/size.module';
     OrderModule,
     UserModule,
     SizeModule,
-    // ProductWarehouseModule,
+    ProductWarehouseModule,
     CategoryModule,
     SizeModule,
+    WarehouseModule,
   ],
   controllers: [AppController],
   providers: [AppService],

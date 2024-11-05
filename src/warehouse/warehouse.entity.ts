@@ -5,7 +5,7 @@ import {
   CreateDateColumn,
   UpdateDateColumn, OneToMany
 } from "typeorm";
-import { ProductWarehouse } from "./producto-warehouse.entity";
+import { ProductWarehouse } from "../product-warehouse/producto-warehouse.entity";
 
 @Entity()
 export class Warehouse {
@@ -21,6 +21,9 @@ export class Warehouse {
 
   @Column({ name: 'w_column_max', type: 'integer' })
   columnMax: number;
+
+  @Column({ name: 'w_spaces', type: 'integer' })
+  spaces: number;
 
   @Column({
     name: 'w_status',
@@ -40,6 +43,16 @@ export class Warehouse {
   productWarehouses: ProductWarehouse[];
 
   ToJSON() {
+    return {
+      id: this.id,
+      name: this.name,
+      rowMax: this.rowMax,
+      columnMax: this.columnMax,
+      status: this.status,
+    };
+  }
+
+  ToBasicJSON() {
     return {
       id: this.id,
       name: this.name,
