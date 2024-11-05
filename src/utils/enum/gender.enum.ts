@@ -1,6 +1,6 @@
 export enum Gender {
-    MALE = "male",
-    FEMALE = "female",
-    NOTBINARY = "not binary",
-    OTHER = "other"
+    MALE = "MALE",
+    FEMALE = "FEMALE",
+    NOTBINARY = "NOT BINARY",
+    OTHER = "OTHER"
 }

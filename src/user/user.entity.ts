@@ -3,9 +3,10 @@ import {
   PrimaryGeneratedColumn,
   Column,
   CreateDateColumn,
-  UpdateDateColumn, OneToMany
-} from "typeorm";
-import { Order } from "../order/order.entity";
+  UpdateDateColumn,
+  OneToMany,
+} from 'typeorm';
+import { Order } from '../order/order.entity';
 
 @Entity()
 export class User {
@@ -30,6 +31,9 @@ export class User {
 
   @Column({ name: 'u_last_login', nullable: true })
   lastLogin: Date;
+
+  @Column({ name: 'u_gender', type: 'enum', enum: ['MALE', 'FEMALE'] })
+  gender: string;
 
   @Column({
     name: 'u_rol',
@@ -62,7 +66,8 @@ export class User {
       firstName: this.firstName,
       lastName: this.lastName,
       email: this.email,
-      username: this.username
-    }
+      username: this.username,
+      gender: this.gender
+    };
   }
 }

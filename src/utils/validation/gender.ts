@@ -5,7 +5,7 @@ import { Gender } from "../enum/gender.enum";
 export class toGender implements ValidatorConstraintInterface {
     validate(value: String, _validationArguments?: ValidationArguments): boolean | Promise<boolean> {
         if (value === undefined) return false;
-        const newValue = value.toLowerCase();
+        const newValue = value.toUpperCase();
         return newValue === Gender.FEMALE || newValue === Gender.MALE || newValue === Gender.NOTBINARY || newValue === Gender.OTHER;
     }
     defaultMessage?(_validationArguments?: ValidationArguments): string {

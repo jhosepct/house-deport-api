@@ -21,4 +21,7 @@ export class UserDto{
   @IsEmail()
   @ApiResponseProperty()
   readonly email: string;
+  @IsString()
+  @ApiResponseProperty()
+  readonly gender: string;
 }
