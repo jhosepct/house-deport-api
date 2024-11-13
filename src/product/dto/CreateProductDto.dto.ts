@@ -43,7 +43,10 @@ export class CreateProductDtoDto {
   readonly sizeId: number;
   @IsArray()
   @IsNotEmpty()
-  @ApiProperty()
+  @ApiProperty({
+    type: LocationDto,
+    isArray: true
+  })
   readonly location: LocationDto[];
   @IsNumber()
   @IsNotEmpty()

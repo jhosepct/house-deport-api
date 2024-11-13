@@ -26,7 +26,8 @@ export class WarehouseService {
   }
 
   async create(warehouseData: CreateWarehouseDto): Promise<WarehouseDto> {
-    return (await this.warehouseRepository.save(warehouseData)).ToJSON();
+    const newWarehouse = this.warehouseRepository.create(warehouseData);
+    return (await this.warehouseRepository.save(newWarehouse)).ToJSON();
   }
 
   async update(

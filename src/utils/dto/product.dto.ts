@@ -1,6 +1,7 @@
-import { IsNotEmpty, IsNumber, IsObject, IsString } from "class-validator";
+import { IsArray, IsNotEmpty, IsNumber, IsObject, IsString } from "class-validator";
 import { SizeDto } from './size.dto';
 import { ApiResponseProperty } from "@nestjs/swagger/dist/decorators/api-property.decorator";
+import { ApiProperty, ApiResponse } from "@nestjs/swagger";
 
 class CategoryBasicDto {
   @IsNumber()
@@ -38,6 +39,10 @@ class ProductWarehouseBasicDto {
   @IsNotEmpty()
   @ApiResponseProperty()
   readonly status: string;
+  @IsNumber()
+  @IsNotEmpty()
+  @ApiResponseProperty()
+  readonly warehouseId: number;
 }
 
 export class ProductDto {
@@ -69,12 +74,13 @@ export class ProductDto {
     type: SizeDto
   })
   readonly size: SizeDto;
-  @IsObject()
+  @IsArray()
   @IsNotEmpty()
-  @ApiResponseProperty({
-    type: ProductWarehouseBasicDto
+  @ApiProperty({
+    type: ProductWarehouseBasicDto,
+    isArray: true
   })
-  readonly productWarehouse: ProductWarehouseBasicDto;
+  readonly productWarehouse: ProductWarehouseBasicDto[];
   @IsNumber()
   @IsNotEmpty()
   @ApiResponseProperty()

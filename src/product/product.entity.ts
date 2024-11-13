@@ -33,10 +33,6 @@ export class Product {
   @JoinColumn({ name: 'si_id' })
   size: Size;
 
-  @ManyToOne(() => ProductWarehouse, (productWarehouse) => productWarehouse.products)
-  @JoinColumn({ name: 'pw_id' })
-  productWarehouse: ProductWarehouse;
-
   @Column({ name: 'p_stock_inventory', type: 'integer' })
   stockInventory: number;
 
@@ -60,7 +56,7 @@ export class Product {
       price: this.price,
       category: this.category ? this.category.ToBasicJSON() : null,
       size: this.size ? this.size.ToJSON() : null,
-      productWarehouse: this.productWarehouse ? this.productWarehouse.ToBasicJSON() : null,
+      productWarehouse: this.productWarehouses ? this.productWarehouses.map((productWarehouse) => productWarehouse.ToBasicJSON()) : [],
       stockInventory: this.stockInventory,
       stockStore: this.stockStore,
     };

@@ -19,7 +19,9 @@ export class ProductWarehouseService {
   ) {}
 
   async findAll(): Promise<ProductWarehouseDto[]> {
-    return (await this.productWarehouseRepository.find()).map(
+    return (await this.productWarehouseRepository.find({
+      relations: ['product', 'warehouse'],
+    })).map(
       (productWarehouse) => productWarehouse.ToJSON(),
     );
   }
@@ -27,6 +29,7 @@ export class ProductWarehouseService {
   async findOne(id: number): Promise<ProductWarehouseDto> {
     const productWarehouse = await this.productWarehouseRepository.findOne({
       where: { id },
+      relations: ['product', 'warehouse'],
     });
     if (!productWarehouse)
       throw new HttpException('Product Warehouse not found', 404);

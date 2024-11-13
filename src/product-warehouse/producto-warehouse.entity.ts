@@ -39,9 +39,6 @@ export class ProductWarehouse {
   @UpdateDateColumn()
   updated_at: Date;
 
-  @OneToMany(() => Product, (product) => product.productWarehouse)
-  products: Product[];
-
   ToJSON() {
     return {
       id: this.id,
@@ -61,6 +58,7 @@ export class ProductWarehouse {
       quantity: this.quantity,
       name: this.warehouse ? this.warehouse.name : null,
       status: this.warehouse ? this.warehouse.status : null,
+      warehouseId: this.warehouse ? this.warehouse.id : null,
     };
   }
 }

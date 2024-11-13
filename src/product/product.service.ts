@@ -23,7 +23,7 @@ export class ProductService {
   ) {}
 
   async findAll(): Promise<ProductDto[]> {
-    return (await this.productRepository.find({ relations: ['category', 'size'] })).map((product) => product.ToJSON());
+    return (await this.productRepository.find({ relations: ['category', 'size', 'productWarehouses', 'productWarehouses.warehouse'] })).map((product) => product.ToJSON());
   }
 
   async findOne(id: number): Promise<ProductDto> {
@@ -62,6 +62,7 @@ export class ProductService {
     const newProduct = this.productRepository.create(productData);
     newProduct.category = category;
     newProduct.size = size;
+    newProduct.stockStore = productData.location.reduce((acc, location) => acc + location.quantity, 0);
     const product = await this.productRepository.save(newProduct);
 
     const productWarehouse = productData.location.map((location) => {
