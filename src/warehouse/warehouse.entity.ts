@@ -22,7 +22,7 @@ export class Warehouse {
   @Column({ name: 'w_column_max', type: 'integer' })
   columnMax: number;
 
-  @Column({ name: 'w_spaces', type: 'integer' })
+  @Column({ name: 'w_spaces', type: 'integer', nullable: true })
   spaces: number;
 
   @Column({

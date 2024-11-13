@@ -1,5 +1,24 @@
 import { ApiProperty, ApiResponseProperty } from "@nestjs/swagger";
-import { IsNotEmpty, IsNumber, IsString } from "class-validator";
+import { IsArray, IsNotEmpty, IsNumber, IsString } from "class-validator";
+
+class LocationDto {
+  @IsNumber()
+  @IsNotEmpty()
+  @ApiProperty()
+  readonly row: number;
+  @IsNumber()
+  @IsNotEmpty()
+  @ApiProperty()
+  readonly column: number;
+  @IsNumber()
+  @IsNotEmpty()
+  @ApiProperty()
+  readonly warehouseId: number;
+  @IsNumber()
+  @IsNotEmpty()
+  @ApiProperty()
+  readonly quantity: number;
+}
 
 export class CreateProductDtoDto {
   @IsString()
@@ -22,12 +41,12 @@ export class CreateProductDtoDto {
   @IsNotEmpty()
   @ApiProperty()
   readonly sizeId: number;
+  @IsArray()
+  @IsNotEmpty()
+  @ApiProperty()
+  readonly location: LocationDto[];
   @IsNumber()
   @IsNotEmpty()
   @ApiProperty()
   readonly stockInventory: number;
-  @IsNumber()
-  @IsNotEmpty()
-  @ApiProperty()
-  readonly stockStore: number;
 }

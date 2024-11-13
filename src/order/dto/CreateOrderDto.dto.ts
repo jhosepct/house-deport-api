@@ -10,6 +10,10 @@ class ProductBasicCreateDto{
   @IsNotEmpty()
   @ApiProperty()
   readonly quantity: number;
+  @IsNumber()
+  @IsNotEmpty()
+  @ApiProperty()
+  readonly productWarehouseId: number;
 }
 
 export class CreateOrderDto{

@@ -8,6 +8,7 @@ import { Client } from '../client/client.entity';
 import { Product } from '../product/product.entity';
 import { User } from '../user/user.entity';
 import { OrderDetail } from './order-detail.entity';
+import { ProductWarehouse } from "../product-warehouse/producto-warehouse.entity";
 
 @Injectable()
 export class OrderService {
@@ -22,6 +23,8 @@ export class OrderService {
     private uerRepository: Repository<Order>,
     @InjectRepository(OrderDetail)
     private orderDetailRepository: Repository<OrderDetail>,
+    @InjectRepository(ProductWarehouse)
+    private productWarehouseRepository: Repository<ProductWarehouse>,
   ) {}
 
   async findAll(): Promise<OrderDto[]> {
@@ -60,6 +63,15 @@ export class OrderService {
     if (products.length !== orderData.products.length)
       throw new HttpException('Product not found', HttpStatus.NOT_FOUND);
 
+    const productWarehouses = await this.productWarehouseRepository.find({
+      where: {
+        id: In(orderData.products.map((product) => product.productWarehouseId)),
+      },
+    });
+
+    if (productWarehouses.length !== orderData.products.length)
+      throw new HttpException('Product Warehouse not found', HttpStatus.NOT_FOUND);
+
     const newOrder = this.orderRepository.create({
       client,
       user,
@@ -80,6 +92,23 @@ export class OrderService {
     });
 
     await this.orderDetailRepository.save(orderDetails);
+
+    const productWarehouseUpdate = productWarehouses.map((productWarehouse) => {
+      const product = orderData.products.find((p) => p.productWarehouseId === productWarehouse.id);
+      productWarehouse.quantity -= product.quantity;
+      return productWarehouse;
+    });
+
+    await this.productWarehouseRepository.save(productWarehouseUpdate);
+
+    // Update products
+    const productsUpdate = products.map((product) => {
+      const productOrder = orderData.products.find((p) => p.id === product.id);
+      product.stockStore -= productOrder.quantity;
+      return product;
+    });
+
+    await this.productRepository.save(productsUpdate);
 
     // Update the total of the order
     const total = orderDetails.reduce(
