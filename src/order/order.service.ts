@@ -116,14 +116,16 @@ export class OrderService {
       0,
     );
 
-    order.total = total;
-    order.subtotal = 0.82 * total;
-    order.numFac = orderData.numFac;
-    order.tax = 0.18 * total;
-    order.status = 'completed';
-    order.date = new Date();
+    const updateOrder : Partial<Order> ={
+      total: total,
+      subtotal: 0.82 * total,
+      numFac : orderData.numFac,
+      tax : 0.18 * total,
+      status :  'completed',
+      date : new Date()
+    }
 
-    const returnOrder = await this.orderRepository.save(order);
+    const returnOrder = await this.orderRepository.save({ ...updateOrder, id: order.id });
 
     return returnOrder.ToJSON();
   }

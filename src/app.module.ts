@@ -54,7 +54,7 @@ import { WarehouseModule } from './warehouse/warehouse.module';
       useFactory: (configService: ConfigType<typeof config>) => ({
         type: 'postgres',
         url: configService.DATABASE_URL_LOCAL,
-        //dropSchema: true,
+        dropSchema: true,
         entities: [
           User,
           Client,
