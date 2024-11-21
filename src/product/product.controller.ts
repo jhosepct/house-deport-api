@@ -47,7 +47,7 @@ export class ProductController {
   @ApiResponse({ status: 200, description: 'Product updated', type: ProductDto })
   update(
     @Param('id') id: number,
-    @Body() updateData: Partial<Product>,
+    @Body() updateData: Partial<CreateProductDtoDto>,
   ): Promise<ProductDto> {
     return this.productService.update(id, updateData);
   }

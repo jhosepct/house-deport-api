@@ -9,25 +9,25 @@ export class UpdateClientDto {
   @IsString()
   @IsOptional()
   @ApiPropertyOptional()
-  readonly lastName: string;
+  readonly lastName?: string;
   @IsString()
   @IsOptional()
   @ApiPropertyOptional()
-  readonly phone: string;
+  readonly phone?: string;
   @IsString()
   @IsOptional()
   @ApiPropertyOptional()
-  readonly email: string;
+  readonly email?: string;
   @IsString()
   @IsOptional()
   @ApiPropertyOptional()
-  readonly address: string;
+  readonly address?: string;
   @IsString()
   @IsOptional()
   @ApiPropertyOptional()
-  readonly numberDocument: string;
+  readonly numberDocument?: string;
   @IsString()
   @IsOptional()
   @ApiPropertyOptional()
-  readonly typeDocument: string;
+  readonly typeDocument?: string;
 }

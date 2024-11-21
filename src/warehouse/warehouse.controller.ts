@@ -1,10 +1,12 @@
-import { Body, Controller, Delete, Get, Param, Post, Put } from "@nestjs/common";
+import { Body, Controller, Delete, Get, Param, Patch, Post, Put } from "@nestjs/common";
 import { WarehouseService } from './warehouse.service';
-import { ApiOperation, ApiResponse } from '@nestjs/swagger';
+import { ApiOperation, ApiResponse, ApiTags } from "@nestjs/swagger";
 import { WarehouseDto } from '../utils/dto/warehouse.dto';
 import { CreateWarehouseDto } from "./dto/CreateWarehouseDto";
 import { Error404 } from "../utils/dto/response.dto";
+import { UpdateWarehouseDto } from "./dto/UpdateWarehouseDto";
 
+@ApiTags('Warehouse')
 @Controller('warehouse')
 export class WarehouseController {
   constructor(private readonly warehouseService: WarehouseService) {}
@@ -31,12 +33,12 @@ export class WarehouseController {
     return this.warehouseService.create(warehouseData);
   }
 
-  @Put(':id')
+  @Patch(':id')
   @ApiOperation({ summary: 'Update a product' })
   @ApiResponse({ status: 200, description: 'Product updated', type: WarehouseDto })
   update(
     @Param('id') id: number,
-    @Body() updateData: Partial<WarehouseDto>,
+    @Body() updateData: UpdateWarehouseDto,
   ): Promise<WarehouseDto> {
     return this.warehouseService.update(id, updateData);
   }

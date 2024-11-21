@@ -4,6 +4,7 @@ import { Warehouse } from './warehouse.entity';
 import { Repository } from 'typeorm';
 import { WarehouseDto } from '../utils/dto/warehouse.dto';
 import { CreateWarehouseDto } from './dto/CreateWarehouseDto';
+import { UpdateWarehouseDto } from './dto/UpdateWarehouseDto';
 
 @Injectable()
 export class WarehouseService {
@@ -13,13 +14,18 @@ export class WarehouseService {
   ) {}
 
   async findAll(): Promise<WarehouseDto[]> {
-    return (await this.warehouseRepository.find()).map((warehouse) =>
-      warehouse.ToJSON(),
-    );
+    return (
+      await this.warehouseRepository.find({
+        relations: ['productWarehouses.product'],
+      })
+    ).map((warehouse) => warehouse.ToJSON());
   }
 
   async findOne(id: number): Promise<WarehouseDto> {
-    const warehouse = await this.warehouseRepository.findOne({ where: { id } });
+    const warehouse = await this.warehouseRepository.findOne({
+      where: { id },
+      relations: ['productWarehouses.product'],
+    });
     if (!warehouse) throw new HttpException('Warehouse not found', 404);
 
     return (await this.warehouseRepository.findOne({ where: { id } })).ToJSON();
@@ -27,17 +33,29 @@ export class WarehouseService {
 
   async create(warehouseData: CreateWarehouseDto): Promise<WarehouseDto> {
     const newWarehouse = this.warehouseRepository.create(warehouseData);
-    return (await this.warehouseRepository.save(newWarehouse)).ToJSON();
+    newWarehouse.spaces = warehouseData.columnMax * warehouseData.rowMax;
+    await this.warehouseRepository.save(newWarehouse);
+    return (
+      await this.warehouseRepository.findOne({
+        where: { id: newWarehouse.id },
+        relations: ['productWarehouses.product'],
+      })
+    ).ToJSON();
   }
 
   async update(
     id: number,
-    updateData: Partial<WarehouseDto>,
+    updateData: UpdateWarehouseDto,
   ): Promise<WarehouseDto> {
     const warehouse = await this.warehouseRepository.findOne({ where: { id } });
     if (!warehouse) throw new HttpException('Warehouse not found', 404);
+
+    await this.warehouseRepository.save({ ...updateData, id });
     return (
-      await this.warehouseRepository.save({ ...updateData, id })
+      await this.warehouseRepository.findOne({
+        where: { id },
+        relations: ['productWarehouses.product'],
+      })
     ).ToJSON();
   }
 

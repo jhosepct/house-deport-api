@@ -1,5 +1,5 @@
-import { IsNotEmpty, IsNumber, IsString } from "class-validator";
-import { ApiProperty } from "@nestjs/swagger";
+import { IsNotEmpty, IsNumber, IsOptional, IsString } from "class-validator";
+import { ApiProperty, ApiPropertyOptional } from "@nestjs/swagger";
 
 export class CreateWarehouseDto {
   @IsString()
@@ -14,4 +14,12 @@ export class CreateWarehouseDto {
   @IsNotEmpty()
   @ApiProperty()
   readonly columnMax: number;
+  @IsString()
+  @IsOptional()
+  @ApiPropertyOptional()
+  readonly description: string;
+  @IsString()
+  @IsNotEmpty()
+  @ApiProperty()
+  readonly color: string;
 }

@@ -1,10 +1,11 @@
 // size.controller.ts
-import { Controller, Get, Post, Put, Delete, Param, Body } from '@nestjs/common';
+import { Controller, Get, Post, Put, Delete, Param, Body, Patch } from "@nestjs/common";
 import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
 import { SizeService } from './size.service';
 import { Size } from './size.entity';
 import { CreateSizeDto } from "./dto/CreateSizeDto.dto";
 import { SizeDto } from "../utils/dto/size.dto";
+import { UpdateSizeDto } from "./dto/UpdateSizeDto.dto";
 
 @ApiTags('Sizes')
 @Controller('sizes')
@@ -32,10 +33,10 @@ export class SizeController {
     return this.sizeService.create(sizeData);
   }
 
-  @Put(':id')
+  @Patch(':id')
   @ApiOperation({ summary: 'Update a size' })
   @ApiResponse({ status: 200, description: 'Size updated', type: SizeDto })
-  update(@Param('id') id: number, @Body() updateData: Partial<Size>): Promise<SizeDto> {
+  update(@Param('id') id: number, @Body() updateData: UpdateSizeDto): Promise<SizeDto> {
     return this.sizeService.update(id, updateData);
   }
 

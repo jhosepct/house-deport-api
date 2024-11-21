@@ -16,14 +16,23 @@ export class Warehouse {
   @Column({ name: 'w_name' })
   name: string;
 
-  @Column({ name: 'w_row_max', type: 'integer' })
+  @Column({ name: 'w_description', nullable: true })
+  description: string;
+
+  @Column({name: 'w_color', nullable: true})
+  color: string;
+
+  @Column({ name: 'w_row_max', type: 'integer', default: 0 })
   rowMax: number;
 
-  @Column({ name: 'w_column_max', type: 'integer' })
+  @Column({ name: 'w_column_max', type: 'integer', default: 0 })
   columnMax: number;
 
-  @Column({ name: 'w_spaces', type: 'integer', nullable: true })
+  @Column({ name: 'w_spaces', type: 'integer', default: 0 })
   spaces: number;
+
+  @Column({ name: 'w_spaces_used', type: 'integer', default: 0 })
+  spacesUsed: number;
 
   @Column({
     name: 'w_status',
@@ -49,6 +58,16 @@ export class Warehouse {
       rowMax: this.rowMax,
       columnMax: this.columnMax,
       status: this.status,
+      description: this.description,
+      color: this.color,
+      spaces: this.spaces,
+      spacesUsed: this.spacesUsed,
+      products: this.productWarehouses.map((productWarehouse) => ({
+        ...productWarehouse.product.ToBasicJSON(),
+        row: productWarehouse.row,
+        column: productWarehouse.column,
+        quantity: productWarehouse.quantity,
+      })),
     };
   }
 

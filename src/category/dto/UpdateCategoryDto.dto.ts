@@ -1,9 +1,17 @@
-import { IsNotEmpty, IsString } from 'class-validator';
-import { ApiProperty } from '@nestjs/swagger';
+import { IsArray, IsOptional, IsString } from "class-validator";
+import {  ApiPropertyOptional } from "@nestjs/swagger";
+import { CreateSizeBasicDto } from "../../utils/dto/CreateSizeBasicDto";
 
-export class UpdateCategoryDtoDto {
+export class UpdateCategoryDto {
   @IsString()
-  @IsNotEmpty()
-  @ApiProperty()
-  readonly name: string;
+  @IsOptional()
+  @ApiPropertyOptional()
+  readonly name?: string;
+  @IsArray()
+  @IsOptional()
+  @ApiPropertyOptional({
+    type: CreateSizeBasicDto,
+    isArray: true
+  })
+  readonly sizes?: CreateSizeBasicDto[];
 }

@@ -7,18 +7,18 @@ export class UpdateUserDto {
   @IsString()
   @IsOptional()
   @ApiPropertyOptional()
-  readonly firstName: string;
+  readonly firstName?: string;
   @IsString()
   @IsOptional()
   @ApiPropertyOptional()
-  readonly lastName: string;
+  readonly lastName?: string;
   @IsString()
   @IsOptional()
   @ApiPropertyOptional()
-  readonly password: string;
+  readonly password?: string;
   @IsString()
-  @IsNotEmpty()
+  @IsOptional()
   @Validate(toGender)
-  @ApiProperty()
-  readonly gender: Gender;
+  @ApiPropertyOptional()
+  readonly gender?: Gender;
 }

@@ -4,20 +4,19 @@ import {
   Column,
   CreateDateColumn,
   UpdateDateColumn,
-  ManyToOne, OneToMany, JoinColumn
-} from "typeorm";
+  ManyToOne,
+  OneToMany,
+  JoinColumn,
+} from 'typeorm';
 import { Category } from '../category/category.entity';
-import { Product } from "../product/product.entity";
+import { Product } from '../product/product.entity';
+import { CategoryToSize } from '../category/categorySize.entity';
 
 @Entity()
 export class Size {
   @Column({ name: 'si_id' })
   @PrimaryGeneratedColumn()
   id: number;
-
-  @ManyToOne(() => Category, (category) => category.sizes)
-  @JoinColumn({ name: 'ca_id' })
-  category: Category;
 
   @Column({ name: 'si_name' })
   name: string;
@@ -30,6 +29,9 @@ export class Size {
 
   @OneToMany(() => Product, (product) => product.size)
   products: Product[];
+
+  @OneToMany(() => CategoryToSize, (categorySize) => categorySize.size)
+  categorySizes: CategoryToSize[];
 
   ToJSON() {
     return {

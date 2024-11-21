@@ -6,8 +6,4 @@ export class CreateSizeDto {
   @IsNotEmpty()
   @ApiProperty()
   name: string;
-  @IsNumber()
-  @IsNotEmpty()
-  @ApiProperty()
-  categoryId: number;
 }

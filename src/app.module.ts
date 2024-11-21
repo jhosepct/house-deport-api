@@ -38,6 +38,7 @@ import { SizeController } from './size/size.controller';
 import { SizeModule } from './size/size.module';
 import { WarehouseController } from './warehouse/warehouse.controller';
 import { WarehouseModule } from './warehouse/warehouse.module';
+import { CategoryToSize } from './category/categorySize.entity';
 
 @Module({
   imports: [
@@ -54,7 +55,7 @@ import { WarehouseModule } from './warehouse/warehouse.module';
       useFactory: (configService: ConfigType<typeof config>) => ({
         type: 'postgres',
         url: configService.DATABASE_URL_LOCAL,
-        dropSchema: true,
+        dropSchema: false,
         entities: [
           User,
           Client,
@@ -62,6 +63,7 @@ import { WarehouseModule } from './warehouse/warehouse.module';
           OrderDetail,
           HistoryProduct,
           Product,
+          CategoryToSize,
           Category,
           Size,
           ProductWarehouse,

@@ -1,7 +1,44 @@
-import { IsEmail, IsNotEmpty, IsNumber, IsString } from "class-validator";
-import { ApiResponseProperty } from "@nestjs/swagger";
+import {
+  IsArray,
+  IsEmail,
+  IsNotEmpty,
+  IsNumber,
+  IsString,
+} from 'class-validator';
+import { ApiProperty, ApiResponseProperty } from '@nestjs/swagger';
 
-export class WarehouseDto{
+export class ProductBasicWithLocationDto {
+  @IsNumber()
+  @IsNotEmpty()
+  @ApiResponseProperty()
+  readonly id: number;
+  @IsString()
+  @IsNotEmpty()
+  @ApiResponseProperty()
+  readonly name: string;
+  @IsString()
+  @IsNotEmpty()
+  @ApiResponseProperty()
+  readonly code: string;
+  @IsNumber()
+  @IsNotEmpty()
+  @ApiResponseProperty()
+  readonly price: number;
+  @IsNumber()
+  @IsNotEmpty()
+  @ApiResponseProperty()
+  readonly quantity: number;
+  @IsNumber()
+  @IsNotEmpty()
+  @ApiResponseProperty()
+  readonly row: number;
+  @IsNumber()
+  @IsNotEmpty()
+  @ApiResponseProperty()
+  readonly column: number;
+}
+
+export class WarehouseDto {
   @IsNumber()
   @IsNotEmpty()
   @ApiResponseProperty()
@@ -22,4 +59,27 @@ export class WarehouseDto{
   @IsNotEmpty()
   @ApiResponseProperty()
   readonly status: string;
+  @IsString()
+  @IsNotEmpty()
+  @ApiResponseProperty()
+  readonly description: string;
+  @IsString()
+  @IsNotEmpty()
+  @ApiResponseProperty()
+  readonly color: string;
+  @IsNumber()
+  @IsNotEmpty()
+  @ApiResponseProperty()
+  readonly spaces: number;
+  @IsNumber()
+  @IsNotEmpty()
+  @ApiResponseProperty()
+  readonly spacesUsed: number;
+  @IsArray()
+  @IsNotEmpty()
+  @ApiProperty({
+    type: ProductBasicWithLocationDto,
+    isArray: true,
+  })
+  readonly products: ProductBasicWithLocationDto[];
 }

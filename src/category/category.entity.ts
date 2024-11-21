@@ -6,8 +6,8 @@ import {
   UpdateDateColumn,
   OneToMany,
 } from 'typeorm';
-import { Size } from '../size/size.entity';
 import { Product } from '../product/product.entity';
+import { CategoryToSize } from './categorySize.entity';
 
 @Entity()
 export class Category {
@@ -18,12 +18,6 @@ export class Category {
   @Column({ name: 'c_name' })
   name: string;
 
-  @OneToMany(() => Size, (size) => size.category, {
-    cascade: true,
-    onDelete: 'CASCADE',
-  })
-  sizes: Size[];
-
   @CreateDateColumn()
   created_at: Date;
 
@@ -33,11 +27,16 @@ export class Category {
   @OneToMany(() => Product, (product) => product.category)
   products: Product[];
 
+  @OneToMany(() => CategoryToSize, (categorySize) => categorySize.category)
+  categorySizes: CategoryToSize[];
+
   ToJSON() {
     return {
       id: this.id,
       name: this.name,
-      sizes: this.sizes ? this.sizes.map((size) => size.ToJSON()) : null,
+      sizes: this.categorySizes.map((categorySize) =>
+        categorySize.size.ToJSON(),
+      ),
     };
   }
 

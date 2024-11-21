@@ -6,6 +6,7 @@ import { Size } from './size.entity';
 import { CreateSizeDto } from './dto/CreateSizeDto.dto';
 import { Category } from '../category/category.entity';
 import { SizeDto } from '../utils/dto/size.dto';
+import { UpdateSizeDto } from "./dto/UpdateSizeDto.dto";
 
 @Injectable()
 export class SizeService {
@@ -18,7 +19,7 @@ export class SizeService {
 
   async findAll(): Promise<SizeDto[]> {
     return (
-      await this.sizeRepository.find({ relations: ['category', 'products'] })
+      await this.sizeRepository.find({ relations: ['products'] })
     ).map((size) => size.ToJSON());
   }
 
@@ -26,26 +27,28 @@ export class SizeService {
     return (
       await this.sizeRepository.findOne({
         where: { id },
-        relations: ['category', 'products'],
+        relations: ['products'],
       })
     ).ToJSON();
   }
 
   async create(sizeData: CreateSizeDto): Promise<SizeDto> {
-    const category = await this.categoryRepository.findOne({
-      where: { id: sizeData.categoryId },
+    const existingSize = await this.sizeRepository.findOne({
+      where: { name: sizeData.name },
     });
-    if (!category) {
-      throw new HttpException('Category not found', HttpStatus.NOT_FOUND);
-    }
+    if (existingSize)
+      throw new HttpException('Size already exists', HttpStatus.BAD_REQUEST);
+
     const size = this.sizeRepository.create();
     size.name = sizeData.name;
-    size.category = category;
     return (await this.sizeRepository.save(size)).ToJSON();
   }
 
-  async update(id: number, updateData: Partial<Size>): Promise<SizeDto> {
-    return (await this.sizeRepository.save({ ...updateData, id })).ToJSON();
+  async update(id: number, updateData: UpdateSizeDto): Promise<SizeDto> {
+    const size = await this.sizeRepository.findOne({ where: { id } });
+    if (!size) throw new HttpException('Size not found', HttpStatus.NOT_FOUND);
+    size.name = updateData.name;
+    return (await this.sizeRepository.save(size)).ToJSON();
   }
 
   async delete(id: number): Promise<void> {
