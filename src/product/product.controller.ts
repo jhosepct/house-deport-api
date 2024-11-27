@@ -7,6 +7,7 @@ import {
   Delete,
   Param,
   Body,
+  ParseIntPipe,
 } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
 import { ProductService } from './product.service';
@@ -14,6 +15,7 @@ import { Product } from './product.entity';
 import { ProductDto } from '../utils/dto/product.dto';
 import { CreateProductDtoDto } from './dto/CreateProductDto.dto';
 import { Error404 } from '../utils/dto/response.dto';
+import { UpdateProductDto } from './dto/UpdateProductDto';
 
 @ApiTags('Products')
 @Controller('products')
@@ -45,9 +47,10 @@ export class ProductController {
   @Put(':id')
   @ApiOperation({ summary: 'Update a product' })
   @ApiResponse({ status: 200, description: 'Product updated', type: ProductDto })
-  update(
-    @Param('id') id: number,
-    @Body() updateData: Partial<CreateProductDtoDto>,
+  @ApiResponse({ status: 404, description: 'Product not found', type: Error404 })
+  async update(
+    @Param('id', ParseIntPipe) id: number,
+    @Body() updateData: UpdateProductDto,
   ): Promise<ProductDto> {
     return this.productService.update(id, updateData);
   }

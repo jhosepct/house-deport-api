@@ -16,6 +16,12 @@ export class ProductWarehouse {
   @PrimaryGeneratedColumn()
   id: number;
 
+  @Column({ name: 'w_id' })
+  warehouseId: number;
+
+  @Column({ name: 'p_id' })
+  productId: number;
+
   @ManyToOne(() => Warehouse, (warehouse) => warehouse.productWarehouses)
   @JoinColumn({ name: 'w_id' })
   warehouse: Warehouse;

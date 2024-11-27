@@ -4,8 +4,8 @@ import { ProductWarehouse } from './producto-warehouse.entity';
 import { Repository } from 'typeorm';
 import { Product } from '../product/product.entity';
 import { Warehouse } from '../warehouse/warehouse.entity';
-import { ProductWarehouseDto } from '../utils/dto/ProductWarehouseDto';
 import { CreateProductWarehouseDto } from './dto/CreateProductWarehouseDto';
+import { UpdateProductWarehouseDto } from './dto/UpdateProductWarehouse.dto';
 
 @Injectable()
 export class ProductWarehouseService {
@@ -18,69 +18,82 @@ export class ProductWarehouseService {
     private warehouseRepository: Repository<Warehouse>,
   ) {}
 
-  async findAll(): Promise<ProductWarehouseDto[]> {
-    return (await this.productWarehouseRepository.find({
+  async findAll(): Promise<ProductWarehouse[]> {
+    return this.productWarehouseRepository.find({
       relations: ['product', 'warehouse'],
-    })).map(
-      (productWarehouse) => productWarehouse.ToJSON(),
-    );
+    });
   }
 
-  async findOne(id: number): Promise<ProductWarehouseDto> {
+  async findOne(id: number): Promise<ProductWarehouse> {
     const productWarehouse = await this.productWarehouseRepository.findOne({
       where: { id },
       relations: ['product', 'warehouse'],
     });
-    if (!productWarehouse)
+
+    if (!productWarehouse) {
       throw new HttpException('Product Warehouse not found', 404);
-    return (
-      await this.productWarehouseRepository.findOne({ where: { id } })
-    ).ToJSON();
+    }
+
+    return productWarehouse;
   }
 
-  async create(
-    productWarehouseData: CreateProductWarehouseDto,
-  ): Promise<ProductWarehouseDto> {
+  async create(createDto: CreateProductWarehouseDto): Promise<ProductWarehouse> {
     const product = await this.productRepository.findOne({
-      where: { id: productWarehouseData.productId },
+      where: { id: createDto.productId },
     });
-    if (!product) throw new HttpException('Product not found', 404);
+    if (!product) {
+      throw new HttpException('Product not found', 404);
+    }
 
     const warehouse = await this.warehouseRepository.findOne({
-      where: { id: productWarehouseData.warehouseId },
+      where: { id: createDto.warehouseId },
     });
-    if (!warehouse) throw new HttpException('Warehouse not found', 404);
+    if (!warehouse) {
+      throw new HttpException('Warehouse not found', 404);
+    }
 
-    const productWarehouse = this.productWarehouseRepository.create({
+    const newProductWarehouse = this.productWarehouseRepository.create({
       product,
       warehouse,
-      row: productWarehouseData.row,
-      column: productWarehouseData.column,
-      quantity: productWarehouseData.quantity,
+      row: createDto.row,
+      column: createDto.column,
+      quantity: createDto.quantity,
     });
 
-    return (
-      await this.productWarehouseRepository.save(productWarehouse)
-    ).ToJSON();
+    return this.productWarehouseRepository.save(newProductWarehouse);
   }
 
-  async update(
-    id: number,
-    updateData: Partial<ProductWarehouseDto>,
-  ): Promise<ProductWarehouseDto> {
-    const productWarehouse = await this.productWarehouseRepository.findOne({
-      where: { id },
+  async update(id: number, updateDto: UpdateProductWarehouseDto): Promise<ProductWarehouse> {
+    const productWarehouse = await this.findOne(id);
+  
+    // Validar y actualizar el productId si está en el DTO
+    if (updateDto.warehouseId) {
+      const warehouse = await this.warehouseRepository.findOne({
+        where: { id: updateDto.warehouseId },
+      });
+      if (!warehouse) {
+        throw new HttpException('Warehouse not found', 404);
+      }
+      productWarehouse.warehouse = warehouse;
+    }
+
+  
+    // Asignar los demás campos directamente
+    Object.assign(productWarehouse, {
+      row: updateDto.row ?? productWarehouse.row,
+      column: updateDto.column ?? productWarehouse.column,
+      quantity: updateDto.quantity ?? productWarehouse.quantity,
     });
-    if (!productWarehouse)
-      throw new HttpException('Product Warehouse not found', 404);
-    return (
-      await this.productWarehouseRepository.save({ ...updateData, id })
-    ).ToJSON();
+  
+    // Guardar los cambios en la base de datos
+    return this.productWarehouseRepository.save(productWarehouse);
   }
+  
 
   async delete(id: number): Promise<void> {
     const result = await this.productWarehouseRepository.delete(id);
-    if (result.affected === 0)
+    if (result.affected === 0) {
       throw new HttpException('Product Warehouse not found', 404);
+    }
   }
 }

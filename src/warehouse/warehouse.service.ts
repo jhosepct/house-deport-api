@@ -27,9 +27,8 @@ export class WarehouseService {
       relations: ['productWarehouses.product'],
     });
     if (!warehouse) throw new HttpException('Warehouse not found', 404);
-
-    return (await this.warehouseRepository.findOne({ where: { id } })).ToJSON();
-  }
+    return warehouse.ToJSON(); // <- Usa el warehouse que ya obtuviste
+}
 
   async create(warehouseData: CreateWarehouseDto): Promise<WarehouseDto> {
     const newWarehouse = this.warehouseRepository.create(warehouseData);

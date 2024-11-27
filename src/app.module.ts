@@ -55,7 +55,7 @@ import { CategoryToSize } from './category/categorySize.entity';
       useFactory: (configService: ConfigType<typeof config>) => ({
         type: 'postgres',
         url: configService.DATABASE_URL_LOCAL,
-        dropSchema: false,
+        // dropSchema: false,
         entities: [
           User,
           Client,
