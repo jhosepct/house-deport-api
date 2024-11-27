@@ -1,5 +1,7 @@
-import { IsArray, IsNotEmpty, IsNumber, IsString } from "class-validator";
-import { ApiProperty, ApiResponseProperty } from "@nestjs/swagger";
+import { IsArray, IsNotEmpty, IsNumber, IsString, Validate } from "class-validator";
+import { ApiProperty } from "@nestjs/swagger";
+import { toPaymentType } from "../../utils/validation/paymentType";
+import { PaymentType } from "../../utils/enum/paymentType.enum";
 
 class ProductBasicCreateDto{
   @IsNumber()
@@ -29,6 +31,11 @@ export class CreateOrderDto{
   @IsNotEmpty()
   @ApiProperty()
   readonly userId: number;
+  @IsString()
+  @IsNotEmpty()
+  @Validate(toPaymentType)
+  @ApiProperty()
+  readonly paymentType: PaymentType;
   @IsArray()
   @IsNotEmpty()
   @ApiProperty({

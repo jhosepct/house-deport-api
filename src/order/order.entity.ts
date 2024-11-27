@@ -42,6 +42,9 @@ export class Order {
   @Column({ name: 'or_total', type: 'double precision', default: 0 })
   total: number;
 
+  @Column({name: 'or_payment_type'})
+  paymentType: string;
+
   @Column({
     name: 'or_status',
     type: 'enum',

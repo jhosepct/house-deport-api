@@ -3,14 +3,12 @@ import {
   PrimaryGeneratedColumn,
   Column,
   CreateDateColumn,
-  UpdateDateColumn, OneToMany
+  UpdateDateColumn, OneToMany, BeforeInsert, BeforeUpdate
 } from "typeorm";
 import { ProductWarehouse } from "../product-warehouse/producto-warehouse.entity";
-
 @Entity()
 export class Warehouse {
-  @Column({ name: 'w_id' })
-  @PrimaryGeneratedColumn()
+  @PrimaryGeneratedColumn({ name: 'w_id' })
   id: number;
 
   @Column({ name: 'w_name' })
@@ -19,7 +17,7 @@ export class Warehouse {
   @Column({ name: 'w_description', nullable: true })
   description: string;
 
-  @Column({name: 'w_color', nullable: true})
+  @Column({ name: 'w_color', nullable: true })
   color: string;
 
   @Column({ name: 'w_row_max', type: 'integer', default: 0 })
@@ -51,6 +49,12 @@ export class Warehouse {
   @OneToMany(() => ProductWarehouse, (productWarehouse) => productWarehouse.warehouse)
   productWarehouses: ProductWarehouse[];
 
+  @BeforeInsert()
+  @BeforeUpdate()
+  calculateSpaces() {
+    this.spaces = this.rowMax * this.columnMax;
+  }
+
   ToJSON() {
     return {
       id: this.id,
@@ -81,3 +85,4 @@ export class Warehouse {
     };
   }
 }
+

@@ -43,6 +43,10 @@ class ProductWarehouseBasicDto {
   @IsNotEmpty()
   @ApiResponseProperty()
   readonly warehouseId: number;
+  @IsString()
+  @IsNotEmpty()
+  @ApiResponseProperty()
+  readonly color: string;
 }
 
 export class ProductDto {

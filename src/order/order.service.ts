@@ -75,6 +75,7 @@ export class OrderService {
     const newOrder = this.orderRepository.create({
       client,
       user,
+      paymentType: orderData.paymentType
     });
 
     let order = await this.orderRepository.save(newOrder);

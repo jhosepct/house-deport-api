@@ -33,7 +33,6 @@ export class WarehouseService {
 
   async create(warehouseData: CreateWarehouseDto): Promise<WarehouseDto> {
     const newWarehouse = this.warehouseRepository.create(warehouseData);
-    newWarehouse.spaces = warehouseData.columnMax * warehouseData.rowMax;
     await this.warehouseRepository.save(newWarehouse);
     return (
       await this.warehouseRepository.findOne({
@@ -50,7 +49,9 @@ export class WarehouseService {
     const warehouse = await this.warehouseRepository.findOne({ where: { id } });
     if (!warehouse) throw new HttpException('Warehouse not found', 404);
 
-    await this.warehouseRepository.save({ ...updateData, id });
+    Object.assign(warehouse, updateData);
+
+    await this.warehouseRepository.save(warehouse);
     return (
       await this.warehouseRepository.findOne({
         where: { id },

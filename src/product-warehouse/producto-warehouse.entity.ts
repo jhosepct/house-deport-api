@@ -59,6 +59,7 @@ export class ProductWarehouse {
       name: this.warehouse ? this.warehouse.name : null,
       status: this.warehouse ? this.warehouse.status : null,
       warehouseId: this.warehouse ? this.warehouse.id : null,
+      color: this.warehouse ? this.warehouse.color : null,
     };
   }
 }
