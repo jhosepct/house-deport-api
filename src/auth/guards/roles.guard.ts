@@ -14,21 +14,19 @@ export class RolesGuard implements CanActivate {
         ]);
 
         if (!requiredRoles) return true;
-        console.log("-.-.-.");
-        console.log(requiredRoles[0].split(','));
 
         const { user, params } = context.switchToHttp().getRequest();
-        console.log(params)
-        console.log(user)
 
-        if (requiredRoles[0] == Role.All) {
-            if (params && params.id) return (requiredRoles[0].split(',')[0] === user.role || requiredRoles[0].split(',')[1] === user.role) && parseInt(params.id) === user.userId;
+        const allRoles = Role.All.split(',');
 
-            return requiredRoles[0].split(',')[0] === user.role || requiredRoles[0].split(',')[1] === user.role;
+        const userHasAccess = requiredRoles.includes(Role.All)
+          ? allRoles.includes(user.role)
+          : requiredRoles.includes(user.role);
+
+        if (params?.id) {
+            return userHasAccess && parseInt(params.id) === user.userId;
         }
-        //if (params && params.id) return requiredRoles[0] === user.role && parseInt(params.id) === user.userId;
 
-
-        return requiredRoles[0] === user.role;
+        return userHasAccess;
     }
 }

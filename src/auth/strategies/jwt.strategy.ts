@@ -3,13 +3,13 @@ import { HttpException, HttpStatus, Inject, Injectable } from '@nestjs/common';
 import { Strategy, ExtractJwt } from 'passport-jwt';
 
 import { ConfigType } from '@nestjs/config';
-import config from '../../config/configuration'
+import config from '../../config/configuration';
 import { IJwtPayload } from '../dto/jwt-payload.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Request } from 'express';
-import { User } from "../../user/user.entity";
-
+import { User } from '../../user/user.entity';
+import { Utils } from '../../utils/utils';
 
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy) {
@@ -19,7 +19,8 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
   ) {
     super({
       jwtFromRequest: ExtractJwt.fromExtractors([
-        JwtStrategy.cookieExtractor,
+        (req) =>
+          JwtStrategy.cookieExtractor(req, this.configService.JWT_SECRET),
         ExtractJwt.fromAuthHeaderAsBearerToken(),
       ]),
       ignoreExpiration: false,
@@ -27,10 +28,24 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     });
   }
 
-  private static cookieExtractor(req: Request): string | null {
-    if (req.cookies && 'user_token' in req.cookies && req.cookies['user_token'].length > 0) return req.cookies['user_token'];
+  private static cookieExtractor(
+    req: Request,
+    jwtSecret: string,
+  ): string | null {
+    if (
+      req.cookies &&
+      jwtSecret in req.cookies &&
+      req.cookies[jwtSecret].length > 0
+    ) {
+      try {
+        const encryptedToken = req.cookies[jwtSecret];
+        return Utils.decryptToken(encryptedToken, jwtSecret);
+      } catch (error) {
+        console.error('Error decrypting token:', error);
+        return null;
+      }
+    }
     return null;
-    // return req?.cookies?.Authentication;
   }
 
   async validate(payload: IJwtPayload) {
@@ -40,9 +55,10 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
       where: {
         id: response.id,
         email: response.email,
-      }
+      },
     });
-    if (!userFound) throw new HttpException('User not found', HttpStatus.NOT_FOUND);
+    if (!userFound)
+      throw new HttpException('User not found', HttpStatus.NOT_FOUND);
 
     return { userId: payload.id, role: payload.role, email: payload.email };
   }

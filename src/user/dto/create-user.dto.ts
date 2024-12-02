@@ -2,6 +2,8 @@ import { IsEmail, IsNotEmpty, IsString, Length, Validate } from "class-validator
 import { ApiProperty } from "@nestjs/swagger";
 import { toGender } from "../../utils/validation/gender";
 import { Gender } from "../../utils/enum/gender.enum";
+import { toRole } from "../../utils/validation/role";
+import { Role } from "../../utils/enum/roles.enum";
 export class CreateUserDto {
     @IsString()
     @IsNotEmpty()
@@ -27,4 +29,9 @@ export class CreateUserDto {
     @Validate(toGender)
     @ApiProperty()
     readonly gender: Gender;
+    @IsString()
+    @IsNotEmpty()
+    @Validate(toRole)
+    @ApiProperty()
+    readonly role: Role;
 }

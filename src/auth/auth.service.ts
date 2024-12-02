@@ -1,62 +1,91 @@
-import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
-import { LoginDto, LoginWithUsernameDto } from "./dto/login-auth.dto";
+import { HttpException, HttpStatus, Inject, Injectable } from '@nestjs/common';
+import { LoginDto, LoginWithUsernameDto } from './dto/login-auth.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 
 import * as bcrypt from 'bcrypt';
 import { JwtService } from '@nestjs/jwt';
 import { Response } from 'express';
-import { User } from "../user/user.entity";
+import { User } from '../user/user.entity';
+import { RequestJwtPayload } from '../user/dto/jwt-payload.dto';
+import { Request } from 'express';
+import { UserDto } from '../utils/dto/user.dto';
+import config from '../config/configuration';
+import { ConfigType } from '@nestjs/config';
+import { Utils } from '../utils/utils';
+
 @Injectable()
 export class AuthService {
-    constructor(
-        @InjectRepository(User) private userRepository: Repository<User>,
+  constructor(
+    @InjectRepository(User) private userRepository: Repository<User>,
+    @Inject(config.KEY) private configService: ConfigType<typeof config>,
+    private jwtService: JwtService,
+  ) {}
 
-        private jwtService: JwtService
-    ) { }
-
-    async login(userObject: LoginDto, res: Response): Promise<HttpException> {
-        const userFound =  await this.userRepository.findOneBy({ email: userObject.email });
-        if (!userFound) throw new HttpException('User not found', HttpStatus.NOT_FOUND);
-
-        const isMatch = await bcrypt.compare(userObject.password, userFound.password);
-        if (!isMatch) throw new HttpException('Invalid password', HttpStatus.UNAUTHORIZED);
-
-        const payload = { id: userFound.id, email: userFound.email, role: userFound.role }
-        const token = this.jwtService.sign(payload);
-
-        res.cookie('user_token', token, {
-            httpOnly: true,
-            secure: false,
-            sameSite: 'strict',
-            maxAge: 365 * 24 * 60 * 60 * 1000,
-            path: '/',
-        });
-        throw new HttpException(userFound.ToJSON(), HttpStatus.OK)
+  async login(
+    userObject: LoginDto | LoginWithUsernameDto,
+    res: Response,
+  ): Promise<HttpException> {
+    let userFound: User = null;
+    console.log(userObject);
+    console.log(userObject instanceof LoginDto);
+    console.log(typeof userObject);
+    if ('email' in userObject) {
+      userFound = await this.userRepository.findOneBy({
+        email: userObject.email,
+      });
+    } else if ('username' in userObject) {
+      userFound = await this.userRepository.findOneBy({
+        username: userObject.username,
+      });
     }
 
-    async loginWithUsername(userObject: LoginWithUsernameDto, res: Response): Promise<HttpException> {
-        const userFound =  await this.userRepository.findOneBy({ username: userObject.username });
-        if (!userFound) throw new HttpException('UserName not found', HttpStatus.NOT_FOUND);
+    if (!userFound)
+      throw new HttpException('User not found', HttpStatus.NOT_FOUND);
 
-        const isMatch = await bcrypt.compare(userObject.password, userFound.password);
-        if (!isMatch) throw new HttpException('Invalid password', HttpStatus.UNAUTHORIZED);
+    const isMatch = await bcrypt.compare(
+      userObject.password,
+      userFound.password,
+    );
+    if (!isMatch)
+      throw new HttpException('Invalid password', HttpStatus.UNAUTHORIZED);
 
-        const payload = { id: userFound.id, email: userFound.email, role: userFound.role }
-        const token = this.jwtService.sign(payload);
+    const payload = {
+      id: userFound.id,
+      email: userFound.email,
+      role: userFound.role,
+    };
+    const token = this.jwtService.sign(payload);
 
-        res.cookie('user_token', token, {
-            httpOnly: true,
-            secure: false,
-            sameSite: 'strict',
-            maxAge: 365 * 24 * 60 * 60 * 1000,
-            path: '/',
-        });
-        throw new HttpException(userFound.ToJSON(), HttpStatus.OK)
-    }
+    const encryptedToken = Utils.encryptToken(
+      token,
+      this.configService.JWT_SECRET,
+    );
 
-    async logout(res: Response) {
-        res.clearCookie('user_token');
-        throw new HttpException('Logout success', HttpStatus.OK);
-    }
+    res.cookie(this.configService.JWT_SECRET, encryptedToken, {
+      httpOnly: true,
+      secure: false, //process.env.NODE_ENV === 'production',
+      sameSite: 'strict',
+      maxAge: 24 * 60 * 60 * 1000,
+      path: '/',
+    });
+    throw new HttpException(userFound.ToJSON(), HttpStatus.OK);
+  }
+
+  async logout(res: Response) {
+    res.clearCookie(this.configService.JWT_SECRET);
+    throw new HttpException('Logout success', HttpStatus.OK);
+  }
+
+  async auth(request: Request): Promise<UserDto> {
+    const dataUser = request.user as RequestJwtPayload;
+    console.log(dataUser);
+    const userFound = await this.userRepository.findOneBy({
+      id: dataUser.userId,
+    });
+    if (!userFound)
+      throw new HttpException('User not found', HttpStatus.NOT_FOUND);
+
+    return userFound.ToJSON();
+  }
 }

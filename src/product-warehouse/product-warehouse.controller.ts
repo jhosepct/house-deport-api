@@ -1,10 +1,14 @@
-import { Body, Controller, Delete, Get, Param, ParseIntPipe, Post, Put } from "@nestjs/common";
+import { Body, Controller, Delete, Get, Param, ParseIntPipe, Post, Put, UseGuards } from "@nestjs/common";
 import { ProductWarehouseService } from "./product-warehouse.service";
 import { ApiOperation, ApiResponse, ApiTags } from "@nestjs/swagger";
 import { CreateProductWarehouseDto } from "./dto/CreateProductWarehouseDto";
 import { Error404 } from "../utils/dto/response.dto";
 import { ProductWarehouse } from "./producto-warehouse.entity";
 import { UpdateProductWarehouseDto } from "./dto/UpdateProductWarehouse.dto";
+import { JwtAuthGuard } from "../auth/guards/jwt-auth.guard";
+import { RolesGuard } from "../auth/guards/roles.guard";
+import { Roles } from "../utils/decorador/roles.decorador";
+import { Role } from "../utils/enum/roles.enum";
 
 
 @ApiTags('Product Warehouse')
@@ -31,6 +35,8 @@ export class ProductWarehouseController {
   @ApiOperation({ summary: 'Create a new product warehouse entry' })
   @ApiResponse({ status: 201, type: ProductWarehouse })
   @ApiResponse({ status: 404, description: 'Product or Warehouse not found' })
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.Admin || Role.Warehouse)
   async create(@Body() createDto: CreateProductWarehouseDto): Promise<ProductWarehouse> {
     return this.productWarehouseService.create(createDto);
   }
@@ -39,6 +45,8 @@ export class ProductWarehouseController {
   @ApiOperation({ summary: 'Update a product warehouse entry' })
   @ApiResponse({ status: 200, type: ProductWarehouse })
   @ApiResponse({ status: 404, description: 'Product Warehouse not found' })
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.Admin || Role.Warehouse)
   async update(
     @Param('id', ParseIntPipe) id: number,
     @Body() updateDto: UpdateProductWarehouseDto,
@@ -50,6 +58,8 @@ export class ProductWarehouseController {
   @ApiOperation({ summary: 'Delete a product warehouse entry' })
   @ApiResponse({ status: 200, description: 'Successfully deleted' })
   @ApiResponse({ status: 404, description: 'Product Warehouse not found' })
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.Admin)
   async delete(@Param('id', ParseIntPipe) id: number): Promise<void> {
     return this.productWarehouseService.delete(id);
   }
