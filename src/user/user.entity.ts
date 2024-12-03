@@ -29,8 +29,8 @@ export class User {
   @Column({ name: 'u_password' })
   password: string;
 
-  @Column({ name: 'u_last_login', nullable: true })
-  lastLogin: Date;
+  @Column({ name: 'u_last_login', nullable: true, default: null })
+  lastSession: Date;
 
   @Column({ name: 'u_gender', type: 'enum', enum: ['MALE', 'FEMALE'] })
   gender: string;
@@ -67,7 +67,8 @@ export class User {
       lastName: this.lastName,
       email: this.email,
       username: this.username,
-      gender: this.gender
+      gender: this.gender,
+      lastSession: this.lastSession,
     };
   }
 }

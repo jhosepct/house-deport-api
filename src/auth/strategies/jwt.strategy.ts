@@ -39,7 +39,11 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     ) {
       try {
         const encryptedToken = req.cookies[jwtSecret];
-        return Utils.decryptToken(encryptedToken, jwtSecret);
+        const token = Utils.decryptToken(encryptedToken, jwtSecret);
+        console.error("token-----------");
+        console.error(token);
+        console.error("token-----------");
+        return token;
       } catch (error) {
         console.error('Error decrypting token:', error);
         return null;

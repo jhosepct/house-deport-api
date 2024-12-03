@@ -1,6 +1,6 @@
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { In, Repository } from 'typeorm';
+import { In, Like, Repository } from 'typeorm';
 import { Order } from './order.entity';
 import { OrderDto } from '../utils/dto/order.dto';
 import { CreateOrderDto } from './dto/CreateOrderDto.dto';
@@ -8,7 +8,10 @@ import { Client } from '../client/client.entity';
 import { Product } from '../product/product.entity';
 import { User } from '../user/user.entity';
 import { OrderDetail } from './order-detail.entity';
-import { ProductWarehouse } from "../product-warehouse/producto-warehouse.entity";
+import { ProductWarehouse } from '../product-warehouse/producto-warehouse.entity';
+import { RequestJwtPayload } from '../user/dto/jwt-payload.dto';
+import { Invoice } from './invoice.entity';
+import { Utils } from '../utils/utils';
 
 @Injectable()
 export class OrderService {
@@ -25,6 +28,8 @@ export class OrderService {
     private orderDetailRepository: Repository<OrderDetail>,
     @InjectRepository(ProductWarehouse)
     private productWarehouseRepository: Repository<ProductWarehouse>,
+    @InjectRepository(Invoice)
+    private invoiceRepository: Repository<Invoice>,
   ) {}
 
   async findAll(): Promise<OrderDto[]> {
@@ -42,11 +47,13 @@ export class OrderService {
     ).ToJSON();
   }
 
-  async create(orderData: CreateOrderDto): Promise<OrderDto> {
+  async create(
+    orderData: CreateOrderDto,
+    payload: RequestJwtPayload,
+  ): Promise<OrderDto> {
     const user = await this.uerRepository.findOne({
-      where: { id: orderData.userId },
+      where: { id: payload.userId },
     });
-    if (!user) throw new HttpException('User not found', HttpStatus.NOT_FOUND);
 
     const client = await this.clientRepository.findOne({
       where: { id: orderData.clientId },
@@ -70,12 +77,15 @@ export class OrderService {
     });
 
     if (productWarehouses.length !== orderData.products.length)
-      throw new HttpException('Product Warehouse not found', HttpStatus.NOT_FOUND);
+      throw new HttpException(
+        'Product Warehouse not found',
+        HttpStatus.NOT_FOUND,
+      );
 
     const newOrder = this.orderRepository.create({
       client,
       user,
-      paymentType: orderData.paymentType
+      paymentType: orderData.paymentType,
     });
 
     let order = await this.orderRepository.save(newOrder);
@@ -95,7 +105,9 @@ export class OrderService {
     await this.orderDetailRepository.save(orderDetails);
 
     const productWarehouseUpdate = productWarehouses.map((productWarehouse) => {
-      const product = orderData.products.find((p) => p.productWarehouseId === productWarehouse.id);
+      const product = orderData.products.find(
+        (p) => p.productWarehouseId === productWarehouse.id,
+      );
       productWarehouse.quantity -= product.quantity;
       return productWarehouse;
     });
@@ -117,18 +129,27 @@ export class OrderService {
       0,
     );
 
-    const updateOrder : Partial<Order> ={
+    const invoice = await this.getInvoice();
+
+    const updateOrder: Partial<Order> = {
       total: total,
       subtotal: 0.82 * total,
-      numFac : orderData.numFac,
-      tax : 0.18 * total,
-      status :  'completed',
-      date : new Date()
-    }
+      invoice: invoice,
+      tax: 0.18 * total,
+      status: 'completed',
+      date: new Date(),
+    };
 
-    const returnOrder = await this.orderRepository.save({ ...updateOrder, id: order.id });
+     await this.orderRepository.save({
+      ...updateOrder,
+      id: order.id,
+    });
 
-    return returnOrder.ToJSON();
+    const orderResponse = await this.orderRepository.findOne({
+      where: { id: order.id },
+      relations: ['client', 'user', 'orderDetails', 'orderDetails.product'],
+    });
+    return orderResponse.ToJSON();
   }
 
   async update(id: number, updateData: CreateOrderDto): Promise<OrderDto> {
@@ -137,5 +158,33 @@ export class OrderService {
 
   async delete(id: number): Promise<void> {
     return this.orderRepository.delete(id).then(() => undefined);
+  }
+
+  private async getInvoice(): Promise<Invoice> {
+    const lastInvoice = await this.invoiceRepository.findOne({
+      where: { numFac: Like(`F%-%`) },
+      order: { numFac: 'DESC' },
+    });
+
+    let series = 'F001'; // Serie inicial
+    let number = 0; // Número inicial
+
+    if (lastInvoice) {
+      const [lastSeries, lastNumber] = lastInvoice.numFac.split('-');
+      series = lastSeries;
+      number = parseInt(lastNumber, 10);
+
+      // Cambiar la serie si el número alcanza el límite
+      if (number >= 9999) {
+        series = Utils.nextSeries(series); // Incrementa la serie
+        number = 0; // Reinicia el número correlativo
+      }
+    }
+    const numFac = Utils.formatInvoice(series, number + 1);
+    const invoice = this.invoiceRepository.create({
+      numFac,
+    });
+
+    return this.invoiceRepository.save(invoice);
   }
 }

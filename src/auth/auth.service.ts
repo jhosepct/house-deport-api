@@ -27,9 +27,6 @@ export class AuthService {
     res: Response,
   ): Promise<HttpException> {
     let userFound: User = null;
-    console.log(userObject);
-    console.log(userObject instanceof LoginDto);
-    console.log(typeof userObject);
     if ('email' in userObject) {
       userFound = await this.userRepository.findOneBy({
         email: userObject.email,
@@ -43,6 +40,7 @@ export class AuthService {
     if (!userFound)
       throw new HttpException('User not found', HttpStatus.NOT_FOUND);
 
+
     const isMatch = await bcrypt.compare(
       userObject.password,
       userFound.password,
@@ -50,11 +48,16 @@ export class AuthService {
     if (!isMatch)
       throw new HttpException('Invalid password', HttpStatus.UNAUTHORIZED);
 
+    //update last login
+    userFound.lastSession = new Date();
+    await this.userRepository.save(userFound);
+
     const payload = {
       id: userFound.id,
       email: userFound.email,
       role: userFound.role,
     };
+
     const token = this.jwtService.sign(payload);
 
     const encryptedToken = Utils.encryptToken(

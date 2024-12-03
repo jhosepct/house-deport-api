@@ -27,10 +27,6 @@ export class CreateOrderDto{
   @IsNotEmpty()
   @ApiProperty()
   readonly clientId: number;
-  @IsNumber()
-  @IsNotEmpty()
-  @ApiProperty()
-  readonly userId: number;
   @IsString()
   @IsNotEmpty()
   @Validate(toPaymentType)

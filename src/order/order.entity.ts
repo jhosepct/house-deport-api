@@ -4,11 +4,12 @@ import {
   Column,
   CreateDateColumn,
   UpdateDateColumn,
-  ManyToOne, JoinColumn, OneToMany
+  ManyToOne, JoinColumn, OneToMany, OneToOne
 } from "typeorm";
 import { Client } from '../client/client.entity';
 import { User } from '../user/user.entity';
 import { OrderDetail } from "./order-detail.entity";
+import { Invoice } from "./invoice.entity";
 
 @Entity()
 export class Order {
@@ -16,8 +17,9 @@ export class Order {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @Column({ name: 'or_num_fac', unique: true, nullable: true })
-  numFac: string;
+  @OneToOne(()=> Invoice)
+  @JoinColumn({ name: 'in_id' })
+  invoice: Invoice;
 
   @ManyToOne(() => Client, (client) => client.orders)
   @JoinColumn({ name: 'c_id' })
@@ -65,9 +67,9 @@ export class Order {
   ToJSON() {
     return {
       id: this.id,
-      numFac: this.numFac,
-      client: this.client ? this.client.ToJSON() : null,
+      numFac: this.invoice.numFac,
       user: this.user ? this.user.ToJSON() : null,
+      client: this.client ? this.client.ToJSON() : null,
       date: this.date,
       subtotal: this.subtotal,
       total: this.total / 100,

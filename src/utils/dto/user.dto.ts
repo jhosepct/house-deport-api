@@ -24,4 +24,8 @@ export class UserDto{
   @IsString()
   @ApiResponseProperty()
   readonly gender: string;
+  @IsString()
+  @ApiResponseProperty()
+  readonly lastSession?: Date;
+
 }

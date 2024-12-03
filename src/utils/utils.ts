@@ -26,4 +26,16 @@ export class Utils{
 
     return decrypted;
   }
+
+  static formatInvoice(series: string, number: number): string {
+    const paddedNumber = number.toString().padStart(4, '0');
+    return `${series}-${paddedNumber}`;
+  }
+
+  static nextSeries(currentSeries: string): string {
+    const prefix = currentSeries.charAt(0);
+    const currentNumber = parseInt(currentSeries.slice(1), 10);
+    const nextNumber = (currentNumber + 1).toString().padStart(3, '0');
+    return `${prefix}${nextNumber}`;
+  }
 }

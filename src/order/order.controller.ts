@@ -1,13 +1,25 @@
-import { Controller, Get, Post, Put, Delete, Param, Body, UseGuards } from "@nestjs/common";
+import {
+  Controller,
+  Get,
+  Post,
+  Put,
+  Delete,
+  Request,
+  Param,
+  Body,
+  UseGuards,
+} from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
 import { OrderService } from './order.service';
 import { Order } from './order.entity';
-import { CreateOrderDto } from "./dto/CreateOrderDto.dto";
-import { OrderDto } from "../utils/dto/order.dto";
-import { JwtAuthGuard } from "../auth/guards/jwt-auth.guard";
-import { RolesGuard } from "../auth/guards/roles.guard";
-import { Roles } from "../utils/decorador/roles.decorador";
-import { Role } from "../utils/enum/roles.enum";
+import { CreateOrderDto } from './dto/CreateOrderDto.dto';
+import { OrderDto } from '../utils/dto/order.dto';
+import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
+import { RolesGuard } from '../auth/guards/roles.guard';
+import { Roles } from '../utils/decorador/roles.decorador';
+import { Role } from '../utils/enum/roles.enum';
+import { Request as Req } from 'express';
+import { RequestJwtPayload } from "../user/dto/jwt-payload.dto";
 
 @ApiTags('orders')
 @Controller('orders')
@@ -34,11 +46,19 @@ export class OrderController {
 
   @Post()
   @ApiOperation({ summary: 'Create a new order' })
-  @ApiResponse({ status: 201, description: 'Order created', type: CreateOrderDto })
+  @ApiResponse({
+    status: 201,
+    description: 'Order created',
+    type: CreateOrderDto,
+  })
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(Role.Admin || Role.Sales)
-  create(@Body() orderData: CreateOrderDto): Promise<OrderDto> {
-    return this.orderService.create(orderData);
+  create(
+    @Body() orderData: CreateOrderDto,
+    @Request() request: Req,
+  ): Promise<OrderDto> {
+    const user = request.user as RequestJwtPayload;
+    return this.orderService.create(orderData, user);
   }
 
   @Put(':id')
@@ -46,7 +66,10 @@ export class OrderController {
   @ApiResponse({ status: 200, description: 'Order updated', type: OrderDto })
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(Role.Admin || Role.Sales)
-  update(@Param('id') id: number, @Body() updateData: CreateOrderDto): Promise<OrderDto> {
+  update(
+    @Param('id') id: number,
+    @Body() updateData: CreateOrderDto,
+  ): Promise<OrderDto> {
     return this.orderService.update(id, updateData);
   }
 
