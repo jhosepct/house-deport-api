@@ -20,18 +20,18 @@ export class RolesGuard implements CanActivate {
 
         const allRoles = Role.All.split(',');
         console.error("-----------");
-        console.error(requiredRoles);
+        console.error(requiredRoles.includes(Role.All));
         console.error(user.role);
+        console.error(allRoles.includes(user.role));
         console.error("-----------");
 
-        const userHasAccess = requiredRoles.includes(Role.All)
+        return requiredRoles.includes(Role.All)
           ? allRoles.includes(user.role)
           : requiredRoles.includes(user.role);
 
-        if (params?.id) {
+        /*if (params?.id) {
             return userHasAccess && parseInt(params.id) === user.userId;
-        }
+        }*/
 
-        return userHasAccess;
     }
 }

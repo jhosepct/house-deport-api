@@ -1,6 +1,6 @@
 import { WarehouseDto } from './warehouse.dto';
 import { ProductBasicDto } from './ProductBasicDto';
-import { IsNotEmpty, IsNumber, IsObject, IsString } from 'class-validator';
+import { IsDate, IsNotEmpty, IsNumber, IsObject, IsString } from "class-validator";
 import { ApiResponse, ApiResponseProperty } from '@nestjs/swagger';
 
 class WarehouseBasicDto {
@@ -51,4 +51,12 @@ export class ProductWarehouseDto {
   @IsNotEmpty()
   @ApiResponseProperty()
   readonly quantity: number;
+  @IsDate()
+  @IsNotEmpty()
+  @ApiResponseProperty()
+  readonly created_at : Date;
+  @IsDate()
+  @IsNotEmpty()
+  @ApiResponseProperty()
+  readonly updated_at : Date;
 }

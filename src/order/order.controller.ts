@@ -7,10 +7,11 @@ import {
   Request,
   Param,
   Body,
-  UseGuards,
-} from '@nestjs/common';
+  UseGuards, Res
+} from "@nestjs/common";
 import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
 import { OrderService } from './order.service';
+import * as PDFDocument from 'pdfkit';
 import { Order } from './order.entity';
 import { CreateOrderDto } from './dto/CreateOrderDto.dto';
 import { OrderDto } from '../utils/dto/order.dto';
@@ -20,6 +21,7 @@ import { Roles } from '../utils/decorador/roles.decorador';
 import { Role } from '../utils/enum/roles.enum';
 import { Request as Req } from 'express';
 import { RequestJwtPayload } from "../user/dto/jwt-payload.dto";
+import { Response } from 'express';
 
 @ApiTags('orders')
 @Controller('orders')
@@ -80,5 +82,17 @@ export class OrderController {
   @Roles(Role.Admin)
   delete(@Param('id') id: number): Promise<void> {
     return this.orderService.delete(id);
+  }
+
+  @Get('nota-venta/:id')
+  async generatePdf(@Param('id') id: number, @Res({ passthrough: true }) res: Response): Promise<void> {
+
+    const buffer = await this.orderService.generateSaleNote(res, id);
+    res.set({
+      'Content-Type': 'application/pdf',
+      'Content-Disposition': 'inline; filename=nota-venta.pdf',
+      'Content-Length': buffer.length,
+    })
+    res.send(buffer);
   }
 }

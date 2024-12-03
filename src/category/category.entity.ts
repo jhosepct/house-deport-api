@@ -37,6 +37,8 @@ export class Category {
       sizes: this.categorySizes.map((categorySize) =>
         categorySize.size.ToJSON(),
       ),
+      created_at: this.created_at,
+      updated_at: this.updated_at,
     };
   }
 
@@ -44,6 +46,8 @@ export class Category {
     return {
       id: this.id,
       name: this.name,
+      created_at: this.created_at,
+      updated_at: this.updated_at,
     };
   }
 }

@@ -59,6 +59,8 @@ export class Product {
       productWarehouse: this.productWarehouses ? this.productWarehouses.map((productWarehouse) => productWarehouse.ToBasicJSON()) : [],
       stockInventory: this.stockInventory,
       stockStore: this.stockStore,
+      created_at: this.created_at,
+      updated_at: this.updated_at,
     };
   }
 
@@ -68,6 +70,8 @@ export class Product {
       name: this.name,
       code: this.code,
       price: this.price,
+      created_at: this.created_at,
+      updated_at: this.updated_at,
     };
   }
 

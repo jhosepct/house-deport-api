@@ -46,6 +46,8 @@ export class OrderDetail {
       quantity: this.quantity,
       unitPrice: this.unitPrice,
       total: this.total / 100,
+      created_at: this.created_at,
+      updated_at: this.updated_at,
     };
   }
 }

@@ -19,10 +19,6 @@ class ProductBasicCreateDto{
 }
 
 export class CreateOrderDto{
-  @IsString()
-  @IsNotEmpty()
-  @ApiProperty()
-  readonly numFac: string;
   @IsNumber()
   @IsNotEmpty()
   @ApiProperty()

@@ -71,11 +71,13 @@ export class Order {
       user: this.user ? this.user.ToJSON() : null,
       client: this.client ? this.client.ToJSON() : null,
       date: this.date,
-      subtotal: this.subtotal,
+      subtotal: this.subtotal / 100,
       total: this.total / 100,
       tax: this.tax / 100,
       status: this.status,
       details: this.orderDetails ? this.orderDetails.map((detail) => detail.ToJSON()) : null,
+      created_at: this.created_at,
+      updated_at: this.updated_at,
     };
   }
 }

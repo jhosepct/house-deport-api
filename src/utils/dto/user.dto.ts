@@ -1,4 +1,4 @@
-import { IsEmail, IsNotEmpty, IsString } from "class-validator";
+import { IsDate, IsEmail, IsNotEmpty, IsString } from "class-validator";
 import { ApiResponseProperty } from "@nestjs/swagger";
 
 export class UserDto{
@@ -27,5 +27,13 @@ export class UserDto{
   @IsString()
   @ApiResponseProperty()
   readonly lastSession?: Date;
+  @IsDate()
+  @IsNotEmpty()
+  @ApiResponseProperty()
+  readonly created_at : Date;
+  @IsDate()
+  @IsNotEmpty()
+  @ApiResponseProperty()
+  readonly updated_at : Date;
 
 }

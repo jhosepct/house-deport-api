@@ -1,10 +1,10 @@
 import {
-  IsArray,
+  IsArray, IsDate,
   IsEmail,
   IsNotEmpty,
   IsNumber,
-  IsString,
-} from 'class-validator';
+  IsString
+} from "class-validator";
 import { ApiProperty, ApiResponseProperty } from '@nestjs/swagger';
 
 export class ProductBasicWithLocationDto {
@@ -82,4 +82,12 @@ export class WarehouseDto {
     isArray: true,
   })
   readonly products: ProductBasicWithLocationDto[];
+  @IsDate()
+  @IsNotEmpty()
+  @ApiResponseProperty()
+  readonly created_at : Date;
+  @IsDate()
+  @IsNotEmpty()
+  @ApiResponseProperty()
+  readonly updated_at : Date;
 }

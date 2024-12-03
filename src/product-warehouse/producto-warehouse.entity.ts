@@ -53,6 +53,8 @@ export class ProductWarehouse {
       row: this.row,
       column: this.column,
       quantity: this.quantity,
+      created_at: this.created_at,
+      updated_at: this.updated_at,
     };
   }
 
@@ -66,6 +68,8 @@ export class ProductWarehouse {
       status: this.warehouse ? this.warehouse.status : null,
       warehouseId: this.warehouse ? this.warehouse.id : null,
       color: this.warehouse ? this.warehouse.color : null,
+      created_at: this.created_at,
+      updated_at: this.updated_at,
     };
   }
 }

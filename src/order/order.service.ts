@@ -1,6 +1,7 @@
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { In, Like, Repository } from 'typeorm';
+import * as PDFDocument from 'pdfkit';
 import { Order } from './order.entity';
 import { OrderDto } from '../utils/dto/order.dto';
 import { CreateOrderDto } from './dto/CreateOrderDto.dto';
@@ -12,6 +13,7 @@ import { ProductWarehouse } from '../product-warehouse/producto-warehouse.entity
 import { RequestJwtPayload } from '../user/dto/jwt-payload.dto';
 import { Invoice } from './invoice.entity';
 import { Utils } from '../utils/utils';
+import { Response } from 'express';
 
 @Injectable()
 export class OrderService {
@@ -34,7 +36,7 @@ export class OrderService {
 
   async findAll(): Promise<OrderDto[]> {
     return (
-      await this.orderRepository.find({ relations: ['client', 'user'] })
+      await this.orderRepository.find({ relations: ['client', 'user','orderDetails', 'orderDetails.product', 'invoice'] })
     ).map((order) => order.ToJSON());
   }
 
@@ -42,7 +44,7 @@ export class OrderService {
     return (
       await this.orderRepository.findOne({
         where: { id },
-        relations: ['client', 'user'],
+        relations: ['client', 'user','orderDetails', 'orderDetails.product', 'invoice'],
       })
     ).ToJSON();
   }
@@ -147,7 +149,7 @@ export class OrderService {
 
     const orderResponse = await this.orderRepository.findOne({
       where: { id: order.id },
-      relations: ['client', 'user', 'orderDetails', 'orderDetails.product'],
+      relations: ['client', 'user', 'orderDetails', 'orderDetails.product', 'invoice'],
     });
     return orderResponse.ToJSON();
   }
@@ -158,6 +160,97 @@ export class OrderService {
 
   async delete(id: number): Promise<void> {
     return this.orderRepository.delete(id).then(() => undefined);
+  }
+
+  async generateSaleNote(res: Response, orderId: number): Promise<Buffer> {
+    const orderRes = await this.orderRepository.findOne({
+      where: { id: orderId },
+      relations: ['client', 'user', 'orderDetails', 'orderDetails.product', 'invoice'],
+    });
+
+    if (!orderRes) {
+      throw new HttpException('Order not found', HttpStatus.NOT_FOUND);
+    }
+
+    const order = orderRes.ToJSON();
+
+    return new Promise((resolve, reject) => {
+      const doc = new PDFDocument({ size: 'A4', margin: 40 });
+
+      const buffers: Buffer[] = [];
+      doc.on('data', buffers.push.bind(buffers));
+      doc.on('end', () => {
+        const pdfData = Buffer.concat(buffers);
+        resolve(pdfData);
+      });
+      doc.on('error', reject);
+
+    /*  // Configuración inicial del PDF
+      res.setHeader('Content-Type', 'application/pdf');
+      res.setHeader('Content-Disposition', 'inline; filename=nota-venta.pdf');
+      doc.pipe(res);*/
+
+      // Encabezado de la empresa
+      doc
+        .text('HOUSE DEPORT', 110, 45)
+        .fontSize(10)
+        .text('House Deport “Creaciones Emily”', 50, 70)
+        .text('RUC: 10713129416 ', 50, 85)
+        .text('Jirón Arequipa #953 San Jerónimo de Tunán', 50, 100)
+        .text('Tel: 987 654 321', 50, 115)
+        .text('Correo: housedeport@gmail.com', 50, 130);
+
+      // Información del cliente
+      doc
+        .fontSize(12)
+        .text(`NOTA DE VENTA`, 300, 50, { align: 'right' })
+        .text(`N° ${order.numFac}`, 300, 70, { align: 'right' })
+        .moveDown()
+        .text(`Cliente: ${order.client.firstName} ${order.client.lastName}`, 50, 180)
+        .text(`DNI: ${order.client.numberDocument}`, 50, 195)
+        .text(`Dirección: ${order.client.address}`, 50, 210);
+
+      // Fecha y hora
+      const date = new Date(order.date);
+      doc
+        .text(`Fecha: ${date.toLocaleDateString()}`, 50, 230)
+        .text(`Hora: ${date.toLocaleTimeString()}`, 50, 245);
+
+      // Tabla de productos
+      doc
+        .moveDown()
+        .text('Cant  U.M   COD            PRECIO  TOTAL', 50, 270)
+        .moveTo(50, 285)
+        .lineTo(550, 285)
+        .stroke();
+
+      let y = 290;
+      order.details.forEach((detail) => {
+        doc
+          .fontSize(10)
+          .text(`${detail.quantity}    Unidad    ${detail.product.code}    ${detail.unitPrice.toFixed(2)}    ${detail.total.toFixed(2)}`, 50, y);
+        y += 15;
+      });
+
+      // Totales
+      doc
+        .fontSize(12)
+        .text(`SUBTOTAL: S/ ${order.subtotal.toFixed(2)}`, 400, y + 20)
+        .text(`TOTAL: S/ ${order.total.toFixed(2)}`, 400, y + 35);
+
+      // Pie de página
+      doc
+        .fontSize(10)
+        .text('Forma de Pago: Contado', 50, y + 70)
+        .text('Condición de Venta: Contado', 50, y + 85)
+        .moveTo(50, y + 110)
+        .lineTo(550, y + 110)
+        .stroke()
+        .text('Representación impresa de la nota de venta electrónica.', 50, y + 120);
+
+      // Finaliza el documento
+      doc.end();
+    });
   }
 
   private async getInvoice(): Promise<Invoice> {

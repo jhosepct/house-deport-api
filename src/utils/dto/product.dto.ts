@@ -1,4 +1,4 @@
-import { IsArray, IsNotEmpty, IsNumber, IsObject, IsString } from "class-validator";
+import { IsArray, IsDate, IsNotEmpty, IsNumber, IsObject, IsString } from "class-validator";
 import { SizeDto } from './size.dto';
 import { ApiResponseProperty } from "@nestjs/swagger/dist/decorators/api-property.decorator";
 import { ApiProperty, ApiResponse } from "@nestjs/swagger";
@@ -93,5 +93,13 @@ export class ProductDto {
   @IsNotEmpty()
   @ApiResponseProperty()
   readonly stockStore: number;
+  @IsDate()
+  @IsNotEmpty()
+  @ApiResponseProperty()
+  readonly created_at : Date;
+  @IsDate()
+  @IsNotEmpty()
+  @ApiResponseProperty()
+  readonly updated_at : Date;
 }
 

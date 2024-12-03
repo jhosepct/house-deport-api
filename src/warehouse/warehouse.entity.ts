@@ -72,6 +72,8 @@ export class Warehouse {
         column: productWarehouse.column,
         quantity: productWarehouse.quantity,
       })),
+      created_at: this.created_at,
+      updated_at: this.updated_at,
     };
   }
 
@@ -82,6 +84,8 @@ export class Warehouse {
       rowMax: this.rowMax,
       columnMax: this.columnMax,
       status: this.status,
+      created_at: this.created_at,
+      updated_at: this.updated_at,
     };
   }
 }

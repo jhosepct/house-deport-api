@@ -64,4 +64,12 @@ export class OrderDto {
     isArray: true
   })
   readonly details: DetailDto[];
+  @IsDate()
+  @IsNotEmpty()
+  @ApiResponseProperty()
+  readonly created_at : Date;
+  @IsDate()
+  @IsNotEmpty()
+  @ApiResponseProperty()
+  readonly updated_at : Date;
 }
