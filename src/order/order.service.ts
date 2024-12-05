@@ -1,7 +1,9 @@
-import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
+import { HttpException, HttpStatus, Injectable, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { In, Like, Repository } from 'typeorm';
 import * as PDFDocument from 'pdfkit';
+import * as fs from 'fs';
+
 import { Order } from './order.entity';
 import { OrderDto } from '../utils/dto/order.dto';
 import { CreateOrderDto } from './dto/CreateOrderDto.dto';
@@ -14,9 +16,12 @@ import { RequestJwtPayload } from '../user/dto/jwt-payload.dto';
 import { Invoice } from './invoice.entity';
 import { Utils } from '../utils/utils';
 import { Response } from 'express';
+import * as path from 'node:path';
 
 @Injectable()
 export class OrderService {
+  private readonly logger = new Logger(OrderService.name);
+
   constructor(
     @InjectRepository(Order)
     private orderRepository: Repository<Order>,
@@ -32,11 +37,12 @@ export class OrderService {
     private productWarehouseRepository: Repository<ProductWarehouse>,
     @InjectRepository(Invoice)
     private invoiceRepository: Repository<Invoice>,
-  ) {}
+  ) {
+  }
 
   async findAll(): Promise<OrderDto[]> {
     return (
-      await this.orderRepository.find({ relations: ['client', 'user','orderDetails', 'orderDetails.product', 'invoice'] })
+      await this.orderRepository.find({ relations: ['client', 'user', 'orderDetails', 'orderDetails.product', 'invoice'] })
     ).map((order) => order.ToJSON());
   }
 
@@ -44,7 +50,7 @@ export class OrderService {
     return (
       await this.orderRepository.findOne({
         where: { id },
-        relations: ['client', 'user','orderDetails', 'orderDetails.product', 'invoice'],
+        relations: ['client', 'user', 'orderDetails', 'orderDetails.product', 'invoice'],
       })
     ).ToJSON();
   }
@@ -142,7 +148,7 @@ export class OrderService {
       date: new Date(),
     };
 
-     await this.orderRepository.save({
+    await this.orderRepository.save({
       ...updateOrder,
       id: order.id,
     });
@@ -174,8 +180,13 @@ export class OrderService {
 
     const order = orderRes.ToJSON();
 
+
     return new Promise((resolve, reject) => {
-      const doc = new PDFDocument({ size: 'A4', margin: 40 });
+      const doc = new PDFDocument({
+        size: 'A4',
+        margin: 40,
+        bufferPages: true,
+      });
 
       const buffers: Buffer[] = [];
       doc.on('data', buffers.push.bind(buffers));
@@ -185,68 +196,130 @@ export class OrderService {
       });
       doc.on('error', reject);
 
-    /*  // Configuración inicial del PDF
-      res.setHeader('Content-Type', 'application/pdf');
-      res.setHeader('Content-Disposition', 'inline; filename=nota-venta.pdf');
-      doc.pipe(res);*/
+      // Company Logo Configuration
+      const possiblePaths = [
+        path.join(process.cwd(), 'public', 'logo.png'),
+        path.join(__dirname, '..', '..', 'public', 'logo.png'),
+        path.join(__dirname, 'public', 'logo.png')
+      ];
 
-      // Encabezado de la empresa
+      for (const logoPath of possiblePaths) {
+        if (fs.existsSync(logoPath)) {
+          doc.image(logoPath, 50, 40, {
+            width: 100,
+            align: 'left',
+            valign: 'top',
+          });
+        }
+      }
+      //
+
+
+      // Professional Company Header
       doc
-        .text('HOUSE DEPORT', 110, 45)
+        .font('Helvetica-Bold')
+        .fontSize(14)
+        .text('HOUSE DEPORT', 180, 50, {
+          align: 'left',
+          width: 300,
+        })
+        .font('Helvetica')
         .fontSize(10)
-        .text('House Deport “Creaciones Emily”', 50, 70)
-        .text('RUC: 10713129416 ', 50, 85)
-        .text('Jirón Arequipa #953 San Jerónimo de Tunán', 50, 100)
-        .text('Tel: 987 654 321', 50, 115)
-        .text('Correo: housedeport@gmail.com', 50, 130);
+        .text('"Creaciones Emily"', 180, 70, {
+          align: 'left',
+          width: 300,
+        })
+        .text('RUC: 10713129416', 180, 85, {
+          align: 'left',
+          width: 300,
+        });
 
-      // Información del cliente
+      // Detailed Company Information
       doc
+        .fontSize(9)
+        .fillColor('#666666')
+        .text('Jirón Arequipa #953 San Jerónimo de Tunán', 180, 100)
+        .text('Tel: 987 654 321 | Correo: housedeport@gmail.com', 180, 115);
+
+      // Sale Note Header
+      doc
+        .fillColor('#000000')
+        .font('Helvetica-Bold')
         .fontSize(12)
-        .text(`NOTA DE VENTA`, 300, 50, { align: 'right' })
-        .text(`N° ${order.numFac}`, 300, 70, { align: 'right' })
-        .moveDown()
+        .text('NOTA DE VENTA', 400, 50, {
+          align: 'right',
+          width: 150,
+        })
+        .font('Helvetica')
+        .fontSize(10)
+        .text(`N° ${order.numFac}`, 400, 70, {
+          align: 'right',
+          width: 150,
+        });
+
+      // Customer Information
+      doc
+        .font('Helvetica')
+        .fontSize(10)
         .text(`Cliente: ${order.client.firstName} ${order.client.lastName}`, 50, 180)
         .text(`DNI: ${order.client.numberDocument}`, 50, 195)
         .text(`Dirección: ${order.client.address}`, 50, 210);
 
-      // Fecha y hora
+      // Date and Time
       const date = new Date(order.date);
       doc
         .text(`Fecha: ${date.toLocaleDateString()}`, 50, 230)
         .text(`Hora: ${date.toLocaleTimeString()}`, 50, 245);
 
-      // Tabla de productos
+      // Products Table Header
       doc
-        .moveDown()
-        .text('Cant  U.M   COD            PRECIO  TOTAL', 50, 270)
+        .font('Helvetica-Bold')
+        .text('Cant', 50, 270, { width: 50, align: 'left' })
+        .text('U.M', 100, 270, { width: 50, align: 'left' })
+        .text('COD', 150, 270, { width: 80, align: 'left' })
+        .text('PRECIO', 250, 270, { width: 100, align: 'right' })
+        .text('TOTAL', 380, 270, { width: 100, align: 'right' });
+
+      // Draw line under header
+      doc
         .moveTo(50, 285)
         .lineTo(550, 285)
         .stroke();
 
-      let y = 290;
+      // Products Details
+      let y = 300;
+      doc.font('Helvetica');
       order.details.forEach((detail) => {
         doc
-          .fontSize(10)
-          .text(`${detail.quantity}    Unidad    ${detail.product.code}    ${detail.unitPrice.toFixed(2)}    ${detail.total.toFixed(2)}`, 50, y);
+          .text(`${detail.quantity}`, 50, y, { width: 50, align: 'left' })
+          .text('Unidad', 100, y, { width: 50, align: 'left' })
+          .text(`${detail.product.code}`, 150, y, { width: 80, align: 'left' })
+          .text(`S/ ${detail.unitPrice.toFixed(2)}`, 250, y, { width: 100, align: 'right' })
+          .text(`S/ ${detail.total.toFixed(2)}`, 380, y, { width: 100, align: 'right' });
         y += 15;
       });
-
       // Totales
       doc
-        .fontSize(12)
-        .text(`SUBTOTAL: S/ ${order.subtotal.toFixed(2)}`, 400, y + 20)
-        .text(`TOTAL: S/ ${order.total.toFixed(2)}`, 400, y + 35);
+        .font('Helvetica-Bold')
+        .fontSize(11)
+        .text(`SUBTOTAL:`, 300, y + 20, { width: 100, align: 'left' })
+        .text(`S/ ${order.subtotal.toFixed(2)}`, 400, y + 20, { width: 80, align: 'right' })
+        .text(`TOTAL:`, 300, y + 35, { width: 100, align: 'left' })
+        .text(`S/ ${order.total.toFixed(2)}`, 400, y + 35, { width: 80, align: 'right' });
 
-      // Pie de página
+
       doc
-        .fontSize(10)
-        .text('Forma de Pago: Contado', 50, y + 70)
-        .text('Condición de Venta: Contado', 50, y + 85)
+        .font('Helvetica')
+        .fontSize(9)
+        .fillColor('#666666')
+        .text(`Estado de pago Pago: ${order.status}`, 50, y + 70)
         .moveTo(50, y + 110)
         .lineTo(550, y + 110)
         .stroke()
-        .text('Representación impresa de la nota de venta electrónica.', 50, y + 120);
+        .text('Representación impresa de la nota de venta electrónica.', 50, y + 120, {
+          align: 'center',
+          width: 500,
+        });
 
       // Finaliza el documento
       doc.end();

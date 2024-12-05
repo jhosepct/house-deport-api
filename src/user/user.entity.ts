@@ -68,6 +68,7 @@ export class User {
       email: this.email,
       username: this.username,
       gender: this.gender,
+      role: this.role,
       lastSession: this.lastSession,
       created_at: this.created_at,
       updated_at: this.updated_at,

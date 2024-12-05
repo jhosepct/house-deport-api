@@ -1,5 +1,7 @@
-import { IsDate, IsEmail, IsNotEmpty, IsString } from "class-validator";
-import { ApiResponseProperty } from "@nestjs/swagger";
+import { IsDate, IsEmail, IsNotEmpty, IsString } from 'class-validator';
+import { ApiProperty, ApiResponseProperty } from '@nestjs/swagger';
+import { toRole } from '../validation/role';
+import { Role } from '../enum/roles.enum';
 
 export class UserDto{
   @IsString()
@@ -24,6 +26,10 @@ export class UserDto{
   @IsString()
   @ApiResponseProperty()
   readonly gender: string;
+  @IsString()
+  @IsNotEmpty()
+  @ApiProperty()
+  readonly role: string;
   @IsString()
   @ApiResponseProperty()
   readonly lastSession?: Date;
