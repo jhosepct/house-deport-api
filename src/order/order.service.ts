@@ -209,6 +209,7 @@ export class OrderService {
             width: 100,
             align: 'left',
             valign: 'top',
+
           });
         }
       }
