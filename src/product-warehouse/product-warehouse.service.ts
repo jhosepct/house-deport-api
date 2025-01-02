@@ -62,6 +62,14 @@ export class ProductWarehouseService {
       quantity: createDto.quantity,
     });
 
+    //update warehouse
+    warehouse.spacesUsed++;
+    await this.warehouseRepository.save(warehouse);
+
+    //update product
+    product.stockStore += createDto.quantity;
+    await this.productRepository.save(product);
+
     return this.productWarehouseRepository.save(newProductWarehouse);
   }
 
