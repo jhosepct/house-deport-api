@@ -70,6 +70,7 @@ export class ProductWarehouseService {
     product.stockStore += createDto.quantity;
     await this.productRepository.save(product);
 
+    product.stockInventory -= createDto.quantity;
     return this.productWarehouseRepository.save(newProductWarehouse);
   }
 
@@ -110,6 +111,12 @@ export class ProductWarehouseService {
 
     productWarehouse.product.stockInventory += productWarehouse.quantity;
     await this.productRepository.save(productWarehouse.product);
+
+    const warehouse = await this.warehouseRepository.findOne({
+      where: { id: productWarehouse.warehouseId },
+    });
+    warehouse.spacesUsed--;
+    await this.warehouseRepository.save(warehouse);
 
     await this.productWarehouseRepository.remove(productWarehouse);
   }
