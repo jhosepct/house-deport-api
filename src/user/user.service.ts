@@ -22,6 +22,9 @@ export class UserService {
     const userObject = { ...user, password: newPassword }
 
     const newUser = this.userRepository.create(userObject);
+    console.error("-------------")
+    console.log(newUser);
+    console.error("-------------")
     return (await this.userRepository.save(newUser)).ToJSON();
   }
 

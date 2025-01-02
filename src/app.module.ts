@@ -58,7 +58,7 @@ import { ProductionModule } from './production/production.module';
       useFactory: (configService: ConfigType<typeof config>) => ({
         type: 'postgres',
         url: configService.DATABASE_URL_LOCAL,
-        // dropSchema: true,
+        dropSchema: false,
         entities: [
           User,
           Client,
