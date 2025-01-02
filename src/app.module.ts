@@ -39,7 +39,9 @@ import { SizeModule } from './size/size.module';
 import { WarehouseController } from './warehouse/warehouse.controller';
 import { WarehouseModule } from './warehouse/warehouse.module';
 import { CategoryToSize } from './category/categorySize.entity';
-import { Invoice } from "./order/invoice.entity";
+import { Invoice } from './order/invoice.entity';
+import { Production } from './production/production.entity';
+import { ProductionModule } from './production/production.module';
 
 @Module({
   imports: [
@@ -56,7 +58,7 @@ import { Invoice } from "./order/invoice.entity";
       useFactory: (configService: ConfigType<typeof config>) => ({
         type: 'postgres',
         url: configService.DATABASE_URL_LOCAL,
-        dropSchema: false,
+        // dropSchema: true,
         entities: [
           User,
           Client,
@@ -69,7 +71,8 @@ import { Invoice } from "./order/invoice.entity";
           Size,
           ProductWarehouse,
           Warehouse,
-          Invoice
+          Invoice,
+          Production,
         ],
         synchronize: true,
         logging: true,
@@ -85,6 +88,7 @@ import { Invoice } from "./order/invoice.entity";
     CategoryModule,
     SizeModule,
     WarehouseModule,
+    ProductionModule,
   ],
   controllers: [AppController],
   providers: [AppService],

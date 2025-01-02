@@ -4,11 +4,14 @@ import {
   Column,
   ManyToOne,
   CreateDateColumn,
-  UpdateDateColumn, OneToMany, JoinColumn
-} from "typeorm";
+  UpdateDateColumn,
+  OneToMany,
+  JoinColumn,
+} from 'typeorm';
 import { Category } from '../category/category.entity';
 import { Size } from '../size/size.entity';
-import { ProductWarehouse } from "../product-warehouse/producto-warehouse.entity";
+import { ProductWarehouse } from '../product-warehouse/producto-warehouse.entity';
+import { Production } from '../production/production.entity';
 
 @Entity()
 export class Product {
@@ -45,8 +48,13 @@ export class Product {
   @UpdateDateColumn()
   updated_at: Date;
 
-  @OneToMany(() =>ProductWarehouse, (productWarehouse) => productWarehouse.product)
+  @OneToMany(
+    () => ProductWarehouse,
+    (productWarehouse) => productWarehouse.product,
+  )
   productWarehouses: ProductWarehouse[];
+  @OneToMany(() => Production, (production) => production.product)
+  productions: Production[];
 
   ToJSON() {
     return {
@@ -56,7 +64,11 @@ export class Product {
       price: this.price,
       category: this.category ? this.category.ToBasicJSON() : null,
       size: this.size ? this.size.ToJSON() : null,
-      productWarehouse: this.productWarehouses ? this.productWarehouses.map((productWarehouse) => productWarehouse.ToBasicJSON()) : [],
+      productWarehouse: this.productWarehouses
+        ? this.productWarehouses.map((productWarehouse) =>
+            productWarehouse.ToBasicJSON(),
+          )
+        : [],
       stockInventory: this.stockInventory,
       stockStore: this.stockStore,
       created_at: this.created_at,
@@ -74,5 +86,4 @@ export class Product {
       updated_at: this.updated_at,
     };
   }
-
 }

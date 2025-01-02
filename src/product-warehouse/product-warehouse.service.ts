@@ -37,7 +37,9 @@ export class ProductWarehouseService {
     return productWarehouse;
   }
 
-  async create(createDto: CreateProductWarehouseDto): Promise<ProductWarehouse> {
+  async create(
+    createDto: CreateProductWarehouseDto,
+  ): Promise<ProductWarehouse> {
     const product = await this.productRepository.findOne({
       where: { id: createDto.productId },
     });
@@ -63,10 +65,12 @@ export class ProductWarehouseService {
     return this.productWarehouseRepository.save(newProductWarehouse);
   }
 
-  async update(id: number, updateDto: UpdateProductWarehouseDto): Promise<ProductWarehouse> {
+  async update(
+    id: number,
+    updateDto: UpdateProductWarehouseDto,
+  ): Promise<ProductWarehouse> {
     const productWarehouse = await this.findOne(id);
-  
-    // Validar y actualizar el productId si está en el DTO
+
     if (updateDto.warehouseId) {
       const warehouse = await this.warehouseRepository.findOne({
         where: { id: updateDto.warehouseId },
@@ -77,23 +81,28 @@ export class ProductWarehouseService {
       productWarehouse.warehouse = warehouse;
     }
 
-  
-    // Asignar los demás campos directamente
     Object.assign(productWarehouse, {
       row: updateDto.row ?? productWarehouse.row,
       column: updateDto.column ?? productWarehouse.column,
       quantity: updateDto.quantity ?? productWarehouse.quantity,
     });
-  
-    // Guardar los cambios en la base de datos
+
     return this.productWarehouseRepository.save(productWarehouse);
   }
-  
 
   async delete(id: number): Promise<void> {
-    const result = await this.productWarehouseRepository.delete(id);
-    if (result.affected === 0) {
+    const productWarehouse = await this.productWarehouseRepository.findOne({
+      where: { id },
+      relations: ['product'],
+    });
+
+    if (!productWarehouse) {
       throw new HttpException('Product Warehouse not found', 404);
     }
+
+    productWarehouse.product.stockInventory += productWarehouse.quantity;
+    await this.productRepository.save(productWarehouse.product);
+
+    await this.productWarehouseRepository.remove(productWarehouse);
   }
 }

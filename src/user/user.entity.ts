@@ -7,6 +7,7 @@ import {
   OneToMany,
 } from 'typeorm';
 import { Order } from '../order/order.entity';
+import { Production } from '../production/production.entity';
 
 @Entity()
 export class User {
@@ -60,6 +61,11 @@ export class User {
   @OneToMany(() => Order, (order) => order.user)
   orders: Order[];
 
+  @OneToMany(() => Production, (production) => production.user_order)
+  orderedProductions: Production[];
+
+  @OneToMany(() => Production, (production) => production.user_receive_order)
+  receivedProductions: Production[];
   ToJSON() {
     return {
       id: this.id,
