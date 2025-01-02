@@ -69,7 +69,7 @@ export class AuthService {
       httpOnly: true,
       secure: false, //process.env.NODE_ENV === 'production',
       sameSite: 'strict',
-      maxAge: 24 * 60 * 60 * 1000,
+      maxAge:  7 * 24 * 60 * 60 * 1000,
       path: '/',
     });
     throw new HttpException(userFound.ToJSON(), HttpStatus.OK);
