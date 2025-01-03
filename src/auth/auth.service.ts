@@ -67,8 +67,8 @@ export class AuthService {
 
     res.cookie(this.configService.JWT_SECRET, encryptedToken, {
       httpOnly: true,
-      secure: false, //process.env.NODE_ENV === 'production',
-      sameSite: 'strict',
+      secure: true, //process.env.NODE_ENV === 'production',
+      sameSite: 'none',
       maxAge:  7 * 24 * 60 * 60 * 1000,
       path: '/',
     });
