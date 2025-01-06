@@ -8,6 +8,7 @@ export interface Config {
     DATABASE_URL: string;
     DATABASE_URL_LOCAL: string;
     ENCRYPTED_KEY: string;
+    DOMAIN: string;
 }
 
 export default registerAs('config', ():Config => {
@@ -18,6 +19,7 @@ export default registerAs('config', ():Config => {
         PORT: process.env.PORT,
         DATABASE_URL: process.env.DATABASE_URL,
         DATABASE_URL_LOCAL: process.env.DATABASE_URL_LOCAL,
-        ENCRYPTED_KEY: process.env.ENCRYPTED_KEY
+        ENCRYPTED_KEY: process.env.ENCRYPTED_KEY,
+        DOMAIN: process.env.DOMAIN,
     }
 });
