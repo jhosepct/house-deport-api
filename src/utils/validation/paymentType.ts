@@ -1,5 +1,5 @@
 import { ValidationArguments, ValidatorConstraint, ValidatorConstraintInterface } from "class-validator";
-import { PaymentType } from "../enum/PaymentType.enum";
+import { PaymentType } from "../enum/paymentType.enum";
 
 @ValidatorConstraint({ name: 'toPaymentType', async: false })
 export class toPaymentType implements ValidatorConstraintInterface {
