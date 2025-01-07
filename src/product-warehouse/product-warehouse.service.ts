@@ -68,9 +68,10 @@ export class ProductWarehouseService {
 
     //update product
     product.stockStore += createDto.quantity;
+    product.stockInventory -= createDto.quantity;
+
     await this.productRepository.save(product);
 
-    product.stockInventory -= createDto.quantity;
     return this.productWarehouseRepository.save(newProductWarehouse);
   }
 
@@ -110,6 +111,7 @@ export class ProductWarehouseService {
     }
 
     productWarehouse.product.stockInventory += productWarehouse.quantity;
+    productWarehouse.product.stockStore -= productWarehouse.quantity;
     await this.productRepository.save(productWarehouse.product);
 
     const warehouse = await this.warehouseRepository.findOne({
