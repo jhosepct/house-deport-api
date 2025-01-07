@@ -70,7 +70,6 @@ export class CategoryService {
       where: { id: category.id },
       relations: ['categorySizes.size'],
     });
-    console.log(result);
     return result.ToJSON();
   }
 
@@ -78,7 +77,7 @@ export class CategoryService {
     id: number,
     updateData: UpdateCategoryDto,
   ): Promise<CategoryDto> {
-    const category = await this.categoryRepository.findOne({ where: { id } });
+    const category = await this.categoryRepository.findOne({ where: { id }, relations: ['categorySizes.size'] });
     if (!category) {
       throw new HttpException('Category not found', HttpStatus.NOT_FOUND);
     }
@@ -87,26 +86,49 @@ export class CategoryService {
 
     await this.categoryRepository.save(category);
 
-    if (updateData.sizes) {
-      const sizes = await this.sizeRepository.find({
-        where: {
-          id: In(updateData.sizes.map((size) => size.sizeId)),
-        },
+    const existingSizes = category.categorySizes;
+
+    const existingSizeIds = existingSizes.map(
+      (categorySize) => categorySize.size.id,
+    );
+    const newSizeIds = updateData.sizes.map((size) => size.sizeId);
+
+    // Identificar los sizes que deben ser eliminados
+    const sizeIdsToRemove = existingSizeIds.filter(
+      (id) => !newSizeIds.includes(id),
+    );
+
+    // Identificar los sizes que deben ser agregados
+    const sizeIdsToAdd = newSizeIds.filter(
+      (id) => !existingSizeIds.includes(id),
+    );
+
+    // Eliminar los tamaños que ya no están en `updateData.sizes`
+    if (sizeIdsToRemove.length > 0) {
+      await this.categorySizeRepository.delete({
+        category,
+        size: In(sizeIdsToRemove),
+      });
+    }
+
+    // Agregar los nuevos tamaños que no existen actualmente
+    if (sizeIdsToAdd.length > 0) {
+      const sizesToAdd = await this.sizeRepository.find({
+        where: { id: In(sizeIdsToAdd) },
       });
 
-      if (sizes.length !== updateData.sizes.length) {
+      if (sizesToAdd.length !== sizeIdsToAdd.length) {
         throw new HttpException('Size not found', HttpStatus.NOT_FOUND);
       }
 
-      const categorySizes = updateData.sizes.map((sizeData) => {
-        const size = sizes.find((w) => w.id === sizeData.sizeId);
-        return this.categorySizeRepository.create({
+      const categorySizesToAdd = sizesToAdd.map((size) =>
+        this.categorySizeRepository.create({
           size,
           category,
-        });
-      });
+        }),
+      );
 
-      await this.categorySizeRepository.save(categorySizes);
+      await this.categorySizeRepository.save(categorySizesToAdd);
     }
 
     return (

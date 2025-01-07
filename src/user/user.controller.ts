@@ -48,8 +48,8 @@ export class UserController {
     description: 'Error: Bad Request',
     type: Error400,
   })
-  //@UseGuards(JwtAuthGuard, RolesGuard)
-  //@Roles(Role.Admin)
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.Admin)
   createUser(@Body() newUser: CreateUserDto): Promise<UserDto> {
     return this.usersService.createUser(newUser);
   }
@@ -60,8 +60,8 @@ export class UserController {
     status: 200,
     type: [UserDto],
   })
-  // @UseGuards(JwtAuthGuard, RolesGuard)
-  // @Roles(Role.Admin)
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.Admin)
   getUsers(): Promise<UserDto[]> {
     return this.usersService.getUsers();
   }
@@ -77,8 +77,8 @@ export class UserController {
     description: 'Error: Not Found',
     type: Error404,
   })
-  // @UseGuards(JwtAuthGuard, RolesGuard)
-  // @Roles(Role.Admin)
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.Admin)
   getUserById(@Param('id', ParseIntPipe) id: number): Promise<UserDto> {
     return this.usersService.getUserById(id);
   }

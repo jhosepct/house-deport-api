@@ -83,7 +83,6 @@ export class AuthService {
 
   async auth(request: Request): Promise<UserDto> {
     const dataUser = request.user as RequestJwtPayload;
-    console.log(dataUser);
     const userFound = await this.userRepository.findOneBy({
       id: dataUser.userId,
     });

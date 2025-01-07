@@ -218,8 +218,6 @@ export class ProductService {
         throw error;
       }
 
-      // Log unexpected errors and throw a generic error
-      console.error('Error creating product:', error);
       throw new HttpException(
         'Error creating product',
         HttpStatus.INTERNAL_SERVER_ERROR
