@@ -20,14 +20,14 @@ export class ProductionService {
 
   async findAll(): Promise<Production[]> {
     return this.productionRepository.find({
-      relations: ['user_order', 'user_receive_order', 'product'],
+      relations: ['user_order', 'product'],
     });
   }
 
   async findOne(id: number): Promise<Production> {
     const production = await this.productionRepository.findOne({
       where: { id },
-      relations: ['user_order', 'user_receive_order', 'product'],
+      relations: ['user_order', 'product'],
     });
     if (!production) {
       throw new NotFoundException(`Production with ID ${id} not found`);

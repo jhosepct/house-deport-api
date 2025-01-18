@@ -16,10 +16,7 @@ class ProductionDto {
   @IsNotEmpty()
   @ApiResponseProperty()
   readonly user_order: UserDto;
-  @IsObject()
-  @IsNotEmpty()
-  @ApiResponseProperty()
-  readonly user_receive_order: UserDto;
+
   @IsNumber()
   @IsNotEmpty()
   @ApiResponseProperty()
