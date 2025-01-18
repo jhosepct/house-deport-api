@@ -2,20 +2,26 @@ import { Injectable, HttpException, HttpStatus } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Client } from './client.entity';
-import { ClientDto } from "../utils/dto/client.dto";
-import { CreateClientDto } from "./dto/CreateClientDto";
-import { UpdateClientDto } from "./dto/UpdateCientDto";
+import { ClientDto } from '../utils/dto/client.dto';
+import { CreateClientDto } from './dto/CreateClientDto';
+import { UpdateClientDto } from './dto/UpdateCientDto';
 
 @Injectable()
 export class ClientService {
   constructor(
-    @InjectRepository(Client) private readonly clientRepository: Repository<Client>,
+    @InjectRepository(Client)
+    private readonly clientRepository: Repository<Client>,
   ) {}
 
   async createClient(client: CreateClientDto): Promise<ClientDto> {
-    const clientFound = await this.clientRepository.findOneBy({ email: client.email });
+    const clientFound = await this.clientRepository.findOneBy({
+      numberDocument: client.numberDocument,
+    });
     if (clientFound) {
-      throw new HttpException('Client with this email already exists', HttpStatus.CONFLICT);
+      throw new HttpException(
+        'El cliente con el documento ya existe',
+        HttpStatus.CONFLICT,
+      );
     }
 
     const newClient = this.clientRepository.create(client);
@@ -43,7 +49,10 @@ export class ClientService {
     }
   }
 
-  async updateClient(id: number, clientData: UpdateClientDto): Promise<ClientDto> {
+  async updateClient(
+    id: number,
+    clientData: UpdateClientDto,
+  ): Promise<ClientDto> {
     const result = await this.clientRepository.update(id, clientData);
     if (result.affected === 0) {
       throw new HttpException('Client not found', HttpStatus.NOT_FOUND);

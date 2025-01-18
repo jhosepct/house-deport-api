@@ -17,6 +17,7 @@ import { Invoice } from './invoice.entity';
 import { Utils } from '../utils/utils';
 import { Response } from 'express';
 import * as path from 'node:path';
+import { UpdateOrderDto } from './dto/updateOrderDto.dto';
 
 @Injectable()
 export class OrderService {
@@ -37,12 +38,19 @@ export class OrderService {
     private productWarehouseRepository: Repository<ProductWarehouse>,
     @InjectRepository(Invoice)
     private invoiceRepository: Repository<Invoice>,
-  ) {
-  }
+  ) {}
 
   async findAll(): Promise<OrderDto[]> {
     return (
-      await this.orderRepository.find({ relations: ['client', 'user', 'orderDetails', 'orderDetails.product', 'invoice'] })
+      await this.orderRepository.find({
+        relations: [
+          'client',
+          'user',
+          'orderDetails',
+          'orderDetails.product',
+          'invoice',
+        ],
+      })
     ).map((order) => order.ToJSON());
   }
 
@@ -50,7 +58,13 @@ export class OrderService {
     return (
       await this.orderRepository.findOne({
         where: { id },
-        relations: ['client', 'user', 'orderDetails', 'orderDetails.product', 'invoice'],
+        relations: [
+          'client',
+          'user',
+          'orderDetails',
+          'orderDetails.product',
+          'invoice',
+        ],
       })
     ).ToJSON();
   }
@@ -155,13 +169,219 @@ export class OrderService {
 
     const orderResponse = await this.orderRepository.findOne({
       where: { id: order.id },
-      relations: ['client', 'user', 'orderDetails', 'orderDetails.product', 'invoice'],
+      relations: [
+        'client',
+        'user',
+        'orderDetails',
+        'orderDetails.product',
+        'invoice',
+      ],
     });
     return orderResponse.ToJSON();
   }
 
-  async update(id: number, updateData: CreateOrderDto): Promise<OrderDto> {
-    return (await this.orderRepository.save({ ...updateData, id })).ToJSON();
+  async update(id: number, updateData: UpdateOrderDto): Promise<OrderDto> {
+    const existingOrder = await this.orderRepository.findOne({
+      where: { id },
+      relations: ['orderDetails', 'orderDetails.product'],
+    });
+
+    if (!existingOrder) {
+      throw new HttpException('Order not found', HttpStatus.NOT_FOUND);
+    }
+
+    const updatedProducts = await this.productRepository.find({
+      where: {
+        id: In(updateData.products.map((product) => product.id)),
+      },
+    });
+
+    // Find products that were in the order but not in the update
+    const removedDetails = existingOrder.orderDetails.filter(
+      (detail) =>
+        !updateData.products.some(
+          (product) => product.id === detail.product.id,
+        ),
+    );
+
+    // Return quantities to inventory for removed products
+    for (const removedDetail of removedDetails) {
+      const product = await this.productRepository.findOne({
+        where: { id: removedDetail.product.id },
+      });
+      if (product) {
+        product.stockInventory += removedDetail.quantity;
+        await this.productRepository.save(product);
+      }
+    }
+
+    const newOrderDetails: OrderDetail[] = [];
+    const productsToUpdate: Product[] = [];
+    const productWarehousesToUpdate: ProductWarehouse[] = [];
+
+    // Handle existing products and new quantities
+    for (const updatedProduct of updateData.products) {
+      const existingDetail = existingOrder.orderDetails.find(
+        (detail) => detail.product.id === updatedProduct.id,
+      );
+
+      const product = updatedProducts.find((p) => p.id === updatedProduct.id);
+
+      if (!product) {
+        throw new HttpException(
+          `Product not found for product ${updatedProduct.id}`,
+          HttpStatus.NOT_FOUND,
+        );
+      }
+
+      if (existingDetail) {
+        if (updatedProduct.productWarehouseId === 0) {
+          // Case 1: productWarehouseId is 0
+          if (updatedProduct.quantity < existingDetail.quantity) {
+            // If new quantity is less, add difference to stockInventory
+            const difference =
+              existingDetail.quantity - updatedProduct.quantity;
+            product.stockInventory += difference;
+            productsToUpdate.push(product);
+          }
+        } else {
+          // Case 2: productWarehouseId is not 0
+          // First, get the warehouse
+          const productWarehouse =
+            await this.productWarehouseRepository.findOne({
+              where: { id: updatedProduct.productWarehouseId },
+            });
+
+          if (!productWarehouse) {
+            throw new HttpException(
+              `Product warehouse not found for id ${updatedProduct.productWarehouseId}`,
+              HttpStatus.NOT_FOUND,
+            );
+          }
+
+          // Check if there's enough stock in warehouse
+          if (productWarehouse.quantity < updatedProduct.quantity) {
+            throw new HttpException(
+              `Insufficient stock in warehouse for product ${updatedProduct.id}`,
+              HttpStatus.BAD_REQUEST,
+            );
+          }
+
+          // Decrease warehouse quantity and store stock
+          productWarehouse.quantity -= updatedProduct.quantity;
+          product.stockStore -= updatedProduct.quantity;
+
+          // Add to update arrays
+          productWarehousesToUpdate.push(productWarehouse);
+          productsToUpdate.push(product);
+        }
+
+        // Update existing order detail
+        newOrderDetails.push(
+          this.orderDetailRepository.create({
+            order: existingOrder,
+            product: existingDetail.product,
+            quantity:
+              updatedProduct.productWarehouseId === 0
+                ? updatedProduct.quantity
+                : existingDetail.quantity + updatedProduct.quantity,
+            unitPrice: existingDetail.unitPrice,
+            total:
+              existingDetail.unitPrice *
+              (updatedProduct.productWarehouseId === 0
+                ? updatedProduct.quantity
+                : existingDetail.quantity + updatedProduct.quantity) *
+              100,
+          }),
+        );
+      } else {
+        // For new products
+        if (updatedProduct.productWarehouseId !== 0) {
+          // Get and check warehouse for new product
+          const productWarehouse =
+            await this.productWarehouseRepository.findOne({
+              where: { id: updatedProduct.productWarehouseId },
+            });
+
+          if (!productWarehouse) {
+            throw new HttpException(
+              `Product warehouse not found for id ${updatedProduct.productWarehouseId}`,
+              HttpStatus.NOT_FOUND,
+            );
+          }
+
+          // Check if there's enough stock in warehouse
+          if (productWarehouse.quantity < updatedProduct.quantity) {
+            throw new HttpException(
+              `Insufficient stock in warehouse for new product ${updatedProduct.id}`,
+              HttpStatus.BAD_REQUEST,
+            );
+          }
+
+          // Decrease warehouse quantity and store stock for new product
+          productWarehouse.quantity -= updatedProduct.quantity;
+          product.stockStore -= updatedProduct.quantity;
+
+          // Add to update arrays
+          productWarehousesToUpdate.push(productWarehouse);
+          productsToUpdate.push(product);
+        }
+
+        // Create new order detail
+        newOrderDetails.push(
+          this.orderDetailRepository.create({
+            order: existingOrder,
+            product: product,
+            quantity: updatedProduct.quantity,
+            unitPrice: product.price,
+            total: product.price * updatedProduct.quantity * 100,
+          }),
+        );
+      }
+    }
+
+    // Save updates to products and warehouses if needed
+    if (productsToUpdate.length > 0) {
+      await this.productRepository.save(productsToUpdate);
+    }
+    if (productWarehousesToUpdate.length > 0) {
+      await this.productWarehouseRepository.save(productWarehousesToUpdate);
+    }
+
+    // Update order details
+    await this.orderDetailRepository.remove(existingOrder.orderDetails);
+    await this.orderDetailRepository.save(newOrderDetails);
+
+    // Update order totals
+    const total = newOrderDetails.reduce(
+      (acc, orderDetail) => acc + orderDetail.total,
+      0,
+    );
+
+    const updatedOrder: Partial<Order> = {
+      ...updateData,
+      total,
+      subtotal: 0.82 * total,
+      tax: 0.18 * total,
+    };
+
+    await this.orderRepository.save({
+      ...updatedOrder,
+      id: existingOrder.id,
+    });
+
+    return (
+      await this.orderRepository.findOne({
+        where: { id },
+        relations: [
+          'client',
+          'user',
+          'orderDetails',
+          'orderDetails.product',
+          'invoice',
+        ],
+      })
+    ).ToJSON();
   }
 
   async delete(id: number): Promise<void> {
@@ -171,7 +391,13 @@ export class OrderService {
   async generateSaleNote(res: Response, orderId: number): Promise<Buffer> {
     const orderRes = await this.orderRepository.findOne({
       where: { id: orderId },
-      relations: ['client', 'user', 'orderDetails', 'orderDetails.product', 'invoice'],
+      relations: [
+        'client',
+        'user',
+        'orderDetails',
+        'orderDetails.product',
+        'invoice',
+      ],
     });
 
     if (!orderRes) {
@@ -179,7 +405,6 @@ export class OrderService {
     }
 
     const order = orderRes.ToJSON();
-
 
     return new Promise((resolve, reject) => {
       const doc = new PDFDocument({
@@ -200,7 +425,7 @@ export class OrderService {
       const possiblePaths = [
         path.join(process.cwd(), 'public', 'logo.png'),
         path.join(__dirname, '..', '..', 'public', 'logo.png'),
-        path.join(__dirname, 'public', 'logo.png')
+        path.join(__dirname, 'public', 'logo.png'),
       ];
 
       for (const logoPath of possiblePaths) {
@@ -209,12 +434,10 @@ export class OrderService {
             width: 100,
             align: 'left',
             valign: 'top',
-
           });
         }
       }
       //
-
 
       // Professional Company Header
       doc
@@ -262,7 +485,11 @@ export class OrderService {
       doc
         .font('Helvetica')
         .fontSize(10)
-        .text(`Cliente: ${order.client.firstName} ${order.client.lastName}`, 50, 180)
+        .text(
+          `Cliente: ${order.client.firstName} ${order.client.lastName}`,
+          50,
+          180,
+        )
         .text(`DNI: ${order.client.numberDocument}`, 50, 195)
         .text(`Dirección: ${order.client.address}`, 50, 210);
 
@@ -282,10 +509,7 @@ export class OrderService {
         .text('TOTAL', 380, 270, { width: 100, align: 'right' });
 
       // Draw line under header
-      doc
-        .moveTo(50, 285)
-        .lineTo(550, 285)
-        .stroke();
+      doc.moveTo(50, 285).lineTo(550, 285).stroke();
 
       // Products Details
       let y = 300;
@@ -295,8 +519,14 @@ export class OrderService {
           .text(`${detail.quantity}`, 50, y, { width: 50, align: 'left' })
           .text('Unidad', 100, y, { width: 50, align: 'left' })
           .text(`${detail.product.code}`, 150, y, { width: 80, align: 'left' })
-          .text(`S/ ${detail.unitPrice.toFixed(2)}`, 250, y, { width: 100, align: 'right' })
-          .text(`S/ ${detail.total.toFixed(2)}`, 380, y, { width: 100, align: 'right' });
+          .text(`S/ ${detail.unitPrice.toFixed(2)}`, 250, y, {
+            width: 100,
+            align: 'right',
+          })
+          .text(`S/ ${detail.total.toFixed(2)}`, 380, y, {
+            width: 100,
+            align: 'right',
+          });
         y += 15;
       });
       // Totales
@@ -304,10 +534,15 @@ export class OrderService {
         .font('Helvetica-Bold')
         .fontSize(11)
         .text(`SUBTOTAL:`, 300, y + 20, { width: 100, align: 'left' })
-        .text(`S/ ${order.subtotal.toFixed(2)}`, 400, y + 20, { width: 80, align: 'right' })
+        .text(`S/ ${order.subtotal.toFixed(2)}`, 400, y + 20, {
+          width: 80,
+          align: 'right',
+        })
         .text(`TOTAL:`, 300, y + 35, { width: 100, align: 'left' })
-        .text(`S/ ${order.total.toFixed(2)}`, 400, y + 35, { width: 80, align: 'right' });
-
+        .text(`S/ ${order.total.toFixed(2)}`, 400, y + 35, {
+          width: 80,
+          align: 'right',
+        });
 
       doc
         .font('Helvetica')
@@ -317,10 +552,15 @@ export class OrderService {
         .moveTo(50, y + 110)
         .lineTo(550, y + 110)
         .stroke()
-        .text('Representación impresa de la nota de venta electrónica.', 50, y + 120, {
-          align: 'center',
-          width: 500,
-        });
+        .text(
+          'Representación impresa de la nota de venta electrónica.',
+          50,
+          y + 120,
+          {
+            align: 'center',
+            width: 500,
+          },
+        );
 
       // Finaliza el documento
       doc.end();

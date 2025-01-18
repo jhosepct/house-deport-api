@@ -4,12 +4,15 @@ import {
   Column,
   CreateDateColumn,
   UpdateDateColumn,
-  ManyToOne, JoinColumn, OneToMany, OneToOne
-} from "typeorm";
+  ManyToOne,
+  JoinColumn,
+  OneToMany,
+  OneToOne,
+} from 'typeorm';
 import { Client } from '../client/client.entity';
 import { User } from '../user/user.entity';
-import { OrderDetail } from "./order-detail.entity";
-import { Invoice } from "./invoice.entity";
+import { OrderDetail } from './order-detail.entity';
+import { Invoice } from './invoice.entity';
 
 @Entity()
 export class Order {
@@ -17,7 +20,7 @@ export class Order {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @OneToOne(()=> Invoice)
+  @OneToOne(() => Invoice)
   @JoinColumn({ name: 'in_id' })
   invoice: Invoice;
 
@@ -44,7 +47,7 @@ export class Order {
   @Column({ name: 'or_total', type: 'double precision', default: 0 })
   total: number;
 
-  @Column({name: 'or_payment_type'})
+  @Column({ name: 'or_payment_type' })
   paymentType: string;
 
   @Column({
@@ -75,7 +78,10 @@ export class Order {
       total: this.total / 100,
       tax: this.tax / 100,
       status: this.status,
-      details: this.orderDetails ? this.orderDetails.map((detail) => detail.ToJSON()) : null,
+      paymentType: this.paymentType,
+      details: this.orderDetails
+        ? this.orderDetails.map((detail) => detail.ToJSON())
+        : null,
       created_at: this.created_at,
       updated_at: this.updated_at,
     };

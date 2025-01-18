@@ -26,10 +26,6 @@ export class Production {
   @JoinColumn({ name: 'user_order_id' })
   user_order: User;
 
-  @ManyToOne(() => User, (user) => user.receivedProductions)
-  @JoinColumn({ name: 'user_receive_order_id' })
-  user_receive_order: User;
-
   @Column()
   quantity: number;
 
@@ -48,9 +44,6 @@ export class Production {
       id: this.id,
       status: this.status,
       user_order: this.user_order ? this.user_order.ToJSON() : null,
-      user_receive_order: this.user_receive_order
-        ? this.user_receive_order.ToJSON()
-        : null,
       quantity: this.quantity,
       product: this.product ? this.product.ToJSON() : null,
       created_at: this.created_at,

@@ -58,33 +58,4 @@ export class ProductionController {
   findOne(@Param('id') id: string) {
     return this.productionService.findOne(+id);
   }
-
-  @Patch(':id')
-  @Roles(Role.Admin, Role.Production)
-  @ApiOperation({ summary: 'Update a production' })
-  @ApiResponse({
-    status: 200,
-    description: 'The production has been successfully updated.',
-  })
-  @ApiResponse({ status: 403, description: 'Forbidden.' })
-  @ApiResponse({ status: 404, description: 'Production not found.' })
-  update(
-    @Param('id') id: string,
-    @Body() updateProductionDto: UpdateProductionDto,
-  ) {
-    return this.productionService.update(+id, updateProductionDto);
-  }
-
-  @Delete(':id')
-  @Roles(Role.Admin)
-  @ApiOperation({ summary: 'Delete a production' })
-  @ApiResponse({
-    status: 200,
-    description: 'The production has been successfully deleted.',
-  })
-  @ApiResponse({ status: 403, description: 'Forbidden.' })
-  @ApiResponse({ status: 404, description: 'Production not found.' })
-  remove(@Param('id') id: string) {
-    return this.productionService.remove(+id);
-  }
 }

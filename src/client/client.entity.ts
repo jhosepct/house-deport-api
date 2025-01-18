@@ -3,9 +3,10 @@ import {
   PrimaryGeneratedColumn,
   Column,
   CreateDateColumn,
-  UpdateDateColumn, OneToMany
-} from "typeorm";
-import { Order } from "../order/order.entity";
+  UpdateDateColumn,
+  OneToMany,
+} from 'typeorm';
+import { Order } from '../order/order.entity';
 
 @Entity()
 export class Client {
@@ -22,7 +23,7 @@ export class Client {
   @Column({ name: 'c_phone' })
   phone: string;
 
-  @Column({ name: 'c_email', unique: true })
+  @Column({ name: 'c_email' })
   email: string;
 
   @Column({ name: 'c_address' })

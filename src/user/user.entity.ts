@@ -64,8 +64,7 @@ export class User {
   @OneToMany(() => Production, (production) => production.user_order)
   orderedProductions: Production[];
 
-  @OneToMany(() => Production, (production) => production.user_receive_order)
-  receivedProductions: Production[];
+
   ToJSON() {
     return {
       id: this.id,

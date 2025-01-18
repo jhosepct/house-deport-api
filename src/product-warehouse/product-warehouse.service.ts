@@ -91,15 +91,27 @@ export class ProductWarehouseService {
       productWarehouse.warehouse = warehouse;
     }
 
+    const quantityAdd = updateDto.quantity - productWarehouse.quantity;
+
+    const product = await this.productRepository.findOne({
+      where: { id: productWarehouse.product.id },
+    });
+    if (!product) {
+      throw new HttpException('Product not found', 404);
+    }
+
+    product.stockInventory -= quantityAdd;
+    product.stockStore += quantityAdd;
+    await this.productRepository.save(product);
+
     Object.assign(productWarehouse, {
       row: updateDto.row ?? productWarehouse.row,
       column: updateDto.column ?? productWarehouse.column,
-      quantity: updateDto.quantity ?? productWarehouse.quantity,
+      quantity: updateDto.quantity,
     });
 
     return this.productWarehouseRepository.save(productWarehouse);
   }
-
   async delete(id: number): Promise<void> {
     const productWarehouse = await this.productWarehouseRepository.findOne({
       where: { id },

@@ -1,5 +1,5 @@
-import { IsDate, IsNotEmpty, IsNumber, IsString } from "class-validator";
-import { ApiResponseProperty } from "@nestjs/swagger/dist/decorators/api-property.decorator";
+import { IsDate, IsNotEmpty, IsNumber, IsString } from 'class-validator';
+import { ApiResponseProperty } from '@nestjs/swagger/dist/decorators/api-property.decorator';
 
 export class ClientDto {
   @IsNumber()
@@ -19,7 +19,6 @@ export class ClientDto {
   @ApiResponseProperty()
   readonly phone: string;
   @IsString()
-  @IsNotEmpty()
   @ApiResponseProperty()
   readonly email: string;
   @IsString()
@@ -37,9 +36,9 @@ export class ClientDto {
   @IsDate()
   @IsNotEmpty()
   @ApiResponseProperty()
-  readonly created_at : Date;
+  readonly created_at: Date;
   @IsDate()
   @IsNotEmpty()
   @ApiResponseProperty()
-  readonly updated_at : Date;
+  readonly updated_at: Date;
 }

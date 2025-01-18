@@ -1,9 +1,18 @@
-import { IsArray, IsDate, IsNotEmpty, IsNumber, IsObject, IsOptional, IsString } from "class-validator";
+import {
+  IsArray,
+  IsDate,
+  IsNotEmpty,
+  IsNumber,
+  IsObject,
+  IsOptional,
+  IsString,
+} from 'class-validator';
 import { ApiResponseProperty } from '@nestjs/swagger/dist/decorators/api-property.decorator';
 import { UserDto } from './user.dto';
 import { ClientDto } from './client.dto';
-import { ApiProperty } from "@nestjs/swagger";
-import { ProductBasicDto } from "./ProductBasicDto";
+import { ApiProperty } from '@nestjs/swagger';
+import { ProductBasicDto } from './ProductBasicDto';
+import { Column } from 'typeorm';
 
 class DetailDto {
   @IsNumber()
@@ -61,15 +70,21 @@ export class OrderDto {
   @IsNotEmpty()
   @ApiProperty({
     type: DetailDto,
-    isArray: true
+    isArray: true,
   })
   readonly details: DetailDto[];
+
+  @IsString()
+  @IsNotEmpty()
+  @ApiResponseProperty()
+  readonly paymentType: string;
+
   @IsDate()
   @IsNotEmpty()
   @ApiResponseProperty()
-  readonly created_at : Date;
+  readonly created_at: Date;
   @IsDate()
   @IsNotEmpty()
   @ApiResponseProperty()
-  readonly updated_at : Date;
+  readonly updated_at: Date;
 }

@@ -54,48 +54,10 @@ export class ProductionService {
       user_order,
       product,
       quantity,
-      status: 'pending',
+      status: 'completed',
     });
-
+    production.product.stockInventory += production.quantity;
+    await this.productRepository.save(production.product);
     return this.productionRepository.save(production);
-  }
-
-  async update(
-    id: number,
-    updateProductionDto: UpdateProductionDto,
-  ): Promise<Production> {
-    const production = await this.findOne(id);
-
-    if (updateProductionDto.user_receive_orderId) {
-      const user_receive_order = await this.userRepository.findOne({
-        where: { id: updateProductionDto.user_receive_orderId },
-      });
-      if (!user_receive_order) {
-        throw new NotFoundException(
-          `User with ID ${updateProductionDto.user_receive_orderId} not found`,
-        );
-      }
-      production.user_receive_order = user_receive_order;
-    }
-
-    if (updateProductionDto.status) {
-      const oldStatus = production.status;
-      production.status = updateProductionDto.status;
-
-      if (
-        oldStatus !== 'completed' &&
-        updateProductionDto.status === 'completed'
-      ) {
-        production.product.stockInventory += production.quantity;
-        await this.productRepository.save(production.product);
-      }
-    }
-
-    return this.productionRepository.save(production);
-  }
-
-  async remove(id: number): Promise<void> {
-    const production = await this.findOne(id);
-    await this.productionRepository.remove(production);
   }
 }
