@@ -28,7 +28,7 @@ async function bootstrap() {
 
   app.use(cookieParser());
   app.enableCors({
-    origin: [ 'https://house-deport.vercel.app/'],
+    origin: ['https://house-deport.vercel.app', 'http://localhost:3000'],
     credentials: true,
   });
   app.useGlobalPipes(new ValidationPipe());
