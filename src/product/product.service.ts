@@ -10,6 +10,7 @@ import { Size } from '../size/size.entity';
 import { Warehouse } from '../warehouse/warehouse.entity';
 import { ProductWarehouse } from '../product-warehouse/producto-warehouse.entity';
 import { UpdateProductDto } from './dto/UpdateProductDto';
+import { OrderDetail } from '../order/order-detail.entity';
 
 @Injectable()
 export class ProductService {
@@ -23,7 +24,9 @@ export class ProductService {
     private warehouseRepository: Repository<Warehouse>,
     @InjectRepository(ProductWarehouse)
     private productWarehouseRepository: Repository<ProductWarehouse>,
-  ) { }
+    @InjectRepository(OrderDetail)
+    private orderDetailRepository: Repository<OrderDetail>,
+  ) {}
 
   async findAll(): Promise<ProductDto[]> {
     return (
@@ -65,7 +68,7 @@ export class ProductService {
       if (existingProduct) {
         throw new HttpException(
           'Product with this code already exists',
-          HttpStatus.CONFLICT
+          HttpStatus.CONFLICT,
         );
       }
 
@@ -76,7 +79,7 @@ export class ProductService {
       if (!category) {
         throw new HttpException(
           `Category with id ${productData.categoryId} not found`,
-          HttpStatus.NOT_FOUND
+          HttpStatus.NOT_FOUND,
         );
       }
 
@@ -87,12 +90,14 @@ export class ProductService {
       if (!size) {
         throw new HttpException(
           `Size with id ${productData.sizeId} not found`,
-          HttpStatus.NOT_FOUND
+          HttpStatus.NOT_FOUND,
         );
       }
 
       // 4. Get unique warehouse IDs and validate locations
-      const uniqueWarehouseIds = [...new Set(productData.location.map(loc => loc.warehouseId))];
+      const uniqueWarehouseIds = [
+        ...new Set(productData.location.map((loc) => loc.warehouseId)),
+      ];
 
       // 5. Fetch all warehouses at once
       const warehouses = await this.warehouseRepository.find({
@@ -100,18 +105,20 @@ export class ProductService {
       });
 
       if (warehouses.length !== uniqueWarehouseIds.length) {
-        const foundIds = warehouses.map(w => w.id);
-        const missingIds = uniqueWarehouseIds.filter(id => !foundIds.includes(id));
+        const foundIds = warehouses.map((w) => w.id);
+        const missingIds = uniqueWarehouseIds.filter(
+          (id) => !foundIds.includes(id),
+        );
         throw new HttpException(
           `Warehouses not found: ${missingIds.join(', ')}`,
-          HttpStatus.NOT_FOUND
+          HttpStatus.NOT_FOUND,
         );
       }
 
       // 6. Validate locations and warehouse space
       for (const warehouse of warehouses) {
         const locationsInWarehouse = productData.location.filter(
-          loc => loc.warehouseId === warehouse.id
+          (loc) => loc.warehouseId === warehouse.id,
         );
 
         // 6.1 Check for duplicate row/column combinations
@@ -121,7 +128,7 @@ export class ProductService {
           if (locationMap.has(key)) {
             throw new HttpException(
               `Duplicate location (${loc.row},${loc.column}) in warehouse ${warehouse.id}`,
-              HttpStatus.BAD_REQUEST
+              HttpStatus.BAD_REQUEST,
             );
           }
           locationMap.set(key, true);
@@ -132,7 +139,7 @@ export class ProductService {
         if (warehouse.spacesUsed + totalNewLocations > warehouse.spaces) {
           throw new HttpException(
             `Warehouse ${warehouse.id} has insufficient space. Available: ${warehouse.spaces - warehouse.spacesUsed}, Required: ${totalNewLocations}`,
-            HttpStatus.BAD_REQUEST
+            HttpStatus.BAD_REQUEST,
           );
         }
 
@@ -141,13 +148,13 @@ export class ProductService {
           if (loc.row <= 0 || loc.column <= 0) {
             throw new HttpException(
               `Invalid row or column values for warehouse ${warehouse.id}. Values must be positive`,
-              HttpStatus.BAD_REQUEST
+              HttpStatus.BAD_REQUEST,
             );
           }
           if (loc.quantity <= 0) {
             throw new HttpException(
               `Invalid quantity for location (${loc.row},${loc.column}) in warehouse ${warehouse.id}. Quantity must be positive`,
-              HttpStatus.BAD_REQUEST
+              HttpStatus.BAD_REQUEST,
             );
           }
         }
@@ -156,7 +163,7 @@ export class ProductService {
       // 7. Calculate total stock store from all locations
       const totalStockStore = productData.location.reduce(
         (acc, loc) => acc + loc.quantity,
-        0
+        0,
       );
 
       // 8. Create and save the new product
@@ -167,7 +174,7 @@ export class ProductService {
         category,
         size,
         stockStore: totalStockStore,
-        stockInventory: productData.stockInventory
+        stockInventory: productData.stockInventory,
       });
 
       const savedProduct = await this.productRepository.save(newProduct);
@@ -177,7 +184,7 @@ export class ProductService {
       const warehouseUpdatePromises = [];
 
       for (const location of productData.location) {
-        const warehouse = warehouses.find(w => w.id === location.warehouseId);
+        const warehouse = warehouses.find((w) => w.id === location.warehouseId);
 
         // Create product warehouse entry
         const productWarehouse = this.productWarehouseRepository.create({
@@ -185,9 +192,11 @@ export class ProductService {
           warehouse,
           row: location.row,
           column: location.column,
-          quantity: location.quantity
+          quantity: location.quantity,
         });
-        productWarehousePromises.push(this.productWarehouseRepository.save(productWarehouse));
+        productWarehousePromises.push(
+          this.productWarehouseRepository.save(productWarehouse),
+        );
 
         // Update warehouse spaces
         warehouse.spacesUsed++;
@@ -197,7 +206,7 @@ export class ProductService {
       // 10. Save all product warehouse entries and warehouse updates
       await Promise.all([
         ...productWarehousePromises,
-        ...warehouseUpdatePromises
+        ...warehouseUpdatePromises,
       ]);
 
       // 11. Fetch the complete product with all relations
@@ -220,14 +229,12 @@ export class ProductService {
 
       throw new HttpException(
         'Error creating product',
-        HttpStatus.INTERNAL_SERVER_ERROR
+        HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }
   }
-  async update(
-    id: number,
-    updateData: UpdateProductDto,
-  ): Promise<ProductDto> {
+
+  async update(id: number, updateData: UpdateProductDto): Promise<ProductDto> {
     // Buscar el producto existente con sus relaciones
     const existingProduct = await this.productRepository.findOne({
       where: { id },
@@ -267,11 +274,22 @@ export class ProductService {
 
     // Actualizar los campos básicos del producto
     Object.assign(existingProduct, {
-      name: updateData.name !== undefined ? updateData.name : existingProduct.name,
-      code: updateData.code !== undefined ? updateData.code : existingProduct.code,
-      price: updateData.price !== undefined ? updateData.price : existingProduct.price,
-      stockInventory: updateData.stockInventory !== undefined ? updateData.stockInventory : existingProduct.stockInventory,
-      stockStore: updateData.stockStore !== undefined ? updateData.stockStore : existingProduct.stockStore,
+      name:
+        updateData.name !== undefined ? updateData.name : existingProduct.name,
+      code:
+        updateData.code !== undefined ? updateData.code : existingProduct.code,
+      price:
+        updateData.price !== undefined
+          ? updateData.price
+          : existingProduct.price,
+      stockInventory:
+        updateData.stockInventory !== undefined
+          ? updateData.stockInventory
+          : existingProduct.stockInventory,
+      stockStore:
+        updateData.stockStore !== undefined
+          ? updateData.stockStore
+          : existingProduct.stockStore,
     });
 
     // Guardar los cambios
@@ -290,11 +308,54 @@ export class ProductService {
 
     return productWithRelations.ToJSON();
   }
-  async delete(id: number): Promise<void> {
-    const result = await this.productRepository.delete(id);
 
-    if (result.affected === 0) {
-      throw new HttpException('Product not found', HttpStatus.NOT_FOUND);
+  async delete(id: number): Promise<void> {
+    try {
+      // Primero verificamos si el producto existe
+      const product = await this.productRepository.findOne({
+        where: { id },
+        relations: [
+          'productWarehouses',
+          'productWarehouses.warehouse',
+          'productions',
+        ],
+      });
+
+      if (!product) {
+        throw new HttpException('Product not found', HttpStatus.NOT_FOUND);
+      }
+
+      const productInWarehouses = product.productWarehouses.some(
+        (pw) => pw.quantity > 0,
+      );
+      if (productInWarehouses) {
+        throw new HttpException(
+          'No se puede eliminar el producto porque aún tiene existencias en almacén. Por favor, vacíe el o los almacenes primero.',
+          HttpStatus.CONFLICT,
+        );
+      }
+
+      // Verificar si el producto está en alguna orden
+      const orderDetails = await this.orderDetailRepository.find({
+        where: { product: { id: product.id } },
+      });
+
+      if (orderDetails.length > 0) {
+        throw new HttpException(
+          'No se puede eliminar el producto porque se está utilizando en alguna venta',
+          HttpStatus.CONFLICT,
+        );
+      }
+
+      await this.productRepository.remove(product);
+    } catch (error) {
+      if (error instanceof HttpException) {
+        throw error;
+      }
+      throw new HttpException(
+        'Error deleting product',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
     }
   }
 }

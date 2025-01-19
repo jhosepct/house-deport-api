@@ -7,9 +7,10 @@ import { Category } from '../category/category.entity';
 import { Size } from '../size/size.entity';
 import { Warehouse } from "../warehouse/warehouse.entity";
 import { ProductWarehouse } from "../product-warehouse/producto-warehouse.entity";
+import { OrderDetail } from "../order/order-detail.entity";
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Product, Category, Size, Warehouse, ProductWarehouse])],
+  imports: [TypeOrmModule.forFeature([Product, Category, Size, Warehouse, ProductWarehouse, OrderDetail ])],
   providers: [ProductService],
   controllers: [ProductController],
 })

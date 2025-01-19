@@ -29,8 +29,10 @@ export class Production {
   @Column()
   quantity: number;
 
-  @ManyToOne(() => Product, (product) => product.productions)
-  @JoinColumn({ name: 'product_id' })
+  @ManyToOne(() => Product, (product) => product.productions, {
+    onDelete: 'CASCADE',
+  })
+  @JoinColumn({ name: 'product_id' }) // Asegúrate de usar el nombre correcto de la columna
   product: Product;
 
   @CreateDateColumn()

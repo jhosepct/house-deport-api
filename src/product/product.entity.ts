@@ -53,7 +53,10 @@ export class Product {
     (productWarehouse) => productWarehouse.product,
   )
   productWarehouses: ProductWarehouse[];
-  @OneToMany(() => Production, (production) => production.product)
+  @OneToMany(() => Production, (production) => production.product, {
+    cascade: true,
+    onDelete: 'CASCADE',
+  })
   productions: Production[];
 
   ToJSON() {
