@@ -29,6 +29,11 @@ export class UpdateOrderDto {
   @IsNotEmpty()
   @ApiProperty()
   readonly clientId: number;
+
+  @IsNumber()
+  @IsNotEmpty()
+  @ApiProperty()
+  readonly discount: number;
   @IsString()
   @IsNotEmpty()
   @Validate(toPaymentType)

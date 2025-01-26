@@ -77,6 +77,7 @@ export class Order {
       subtotal: this.subtotal / 100,
       total: this.total / 100,
       tax: this.tax / 100,
+      discount: this.discount / 100,
       status: this.status,
       paymentType: this.paymentType,
       details: this.orderDetails

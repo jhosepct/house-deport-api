@@ -108,6 +108,7 @@ export class OrderService {
       client,
       user,
       paymentType: orderData.paymentType,
+      discount: orderData.discount,
     });
 
     let order = await this.orderRepository.save(newOrder);
@@ -154,11 +155,12 @@ export class OrderService {
     const invoice = await this.getInvoice();
 
     const updateOrder: Partial<Order> = {
-      total: total,
+      total: total - orderData.discount * 100, // Subtract discount from total
       subtotal: 0.82 * total,
       invoice: invoice,
       tax: 0.18 * total,
       status: 'completed',
+      discount: orderData.discount * 100,
       date: new Date(),
     };
 
@@ -360,7 +362,8 @@ export class OrderService {
 
     const updatedOrder: Partial<Order> = {
       ...updateData,
-      total,
+      total: total - updateData.discount * 100,
+      discount: updateData.discount * 100,
       subtotal: 0.82 * total,
       tax: 0.18 * total,
     };
@@ -385,7 +388,27 @@ export class OrderService {
   }
 
   async delete(id: number): Promise<void> {
-    return this.orderRepository.delete(id).then(() => undefined);
+    const order = await this.orderRepository.findOne({
+      where: { id },
+      relations: ['orderDetails', 'orderDetails.product'],
+    });
+
+    if (!order) {
+      throw new HttpException('Order not found', HttpStatus.NOT_FOUND);
+    }
+
+    for (const detail of order.orderDetails) {
+      const product = await this.productRepository.findOne({
+        where: { id: detail.product.id },
+      });
+
+      if (product) {
+        product.stockInventory += detail.quantity;
+        await this.productRepository.save(product);
+      }
+    }
+    await this.orderDetailRepository.remove(order.orderDetails);
+    await this.orderRepository.remove(order);
   }
 
   async generateSaleNote(res: Response, orderId: number): Promise<Buffer> {
@@ -538,8 +561,13 @@ export class OrderService {
           width: 80,
           align: 'right',
         })
-        .text(`TOTAL:`, 300, y + 35, { width: 100, align: 'left' })
-        .text(`S/ ${order.total.toFixed(2)}`, 400, y + 35, {
+        .text(`DESCUENTO:`, 300, y + 35, { width: 100, align: 'left' })
+        .text(`S/ ${order.discount.toFixed(2)}`, 400, y + 35, {
+          width: 80,
+          align: 'right',
+        })
+        .text(`TOTAL:`, 300, y + 50, { width: 100, align: 'left' })
+        .text(`S/ ${order.total.toFixed(2)}`, 400, y + 50, {
           width: 80,
           align: 'right',
         });
