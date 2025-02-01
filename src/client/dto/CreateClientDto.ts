@@ -23,11 +23,11 @@ export class CreateClientDto {
   @ApiProperty()
   readonly address: string;
   @IsString()
-  @IsNotEmpty()
+  @IsOptional()
   @ApiProperty()
   readonly numberDocument: string;
   @IsString()
-  @IsNotEmpty()
+  @IsOptional()
   @ApiProperty()
   readonly typeDocument: string;
 }

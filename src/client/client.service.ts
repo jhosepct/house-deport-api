@@ -14,16 +14,6 @@ export class ClientService {
   ) {}
 
   async createClient(client: CreateClientDto): Promise<ClientDto> {
-    const clientFound = await this.clientRepository.findOneBy({
-      numberDocument: client.numberDocument,
-    });
-    if (clientFound) {
-      throw new HttpException(
-        'El cliente con el documento ya existe',
-        HttpStatus.CONFLICT,
-      );
-    }
-
     const newClient = this.clientRepository.create(client);
     const savedClient = await this.clientRepository.save(newClient);
     return savedClient.ToJSON();

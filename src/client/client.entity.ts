@@ -29,10 +29,17 @@ export class Client {
   @Column({ name: 'c_address' })
   address: string;
 
-  @Column({ name: 'c_number_document' })
+  @Column({
+    name: 'c_number_document',
+  })
   numberDocument: string;
 
-  @Column({ name: 'c_type_document', type: 'enum', enum: ['DNI', 'RUC'] })
+  @Column({
+    name: 'c_type_document',
+    type: 'enum',
+    enum: ['DNI', 'RUC', ''],
+    default: '',
+  })
   typeDocument: string;
 
   @Column({

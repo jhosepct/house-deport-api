@@ -513,8 +513,8 @@ export class OrderService {
           50,
           180,
         )
-        .text(`DNI: ${order.client.numberDocument}`, 50, 195)
-        .text(`Dirección: ${order.client.address}`, 50, 210);
+
+        .text(`Dirección: ${order.client.address}`, 50, 195);
 
       // Date and Time
       const date = new Date(order.date);
